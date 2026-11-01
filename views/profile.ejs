@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - الملف الشخصي</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    /* كروت ثابتة بدون هوفر وانزياح عشوائي */
+    .bento-card, .static-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.5rem;
+      transform: none !important;
+      transition: border-color 0.2s ease !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
+    }
+
+    /* أنيميشن نزول الكرت الرئاسي من الأعلى */
+    @keyframes dropDownCard {
+      0% {
+        opacity: 0;
+        transform: translateY(-22px) scale(0.985);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .animate-drop-down {
+      animation: dropDownCard 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      will-change: transform, opacity;
+    }
+
+    /* نظام الـ Tooltip الموحد للشارات والأزرار */
+    .has-custom-tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-tooltip {
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a122c;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 4px 14px rgba(10, 18, 44, 0.25);
+      transition: none;
+    }
+
+    .custom-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 4px;
+      border-style: solid;
+      border-color: #0a122c transparent transparent transparent;
+    }
+
+    .has-custom-tooltip:hover .custom-tooltip {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* الشارات النظيفة (أيقونات سادة بدون خلفية مع تفاعل تكبير خفيف) */
+    .profile-badge-btn {
+      background: transparent !important;
+      border: none !important;
+      padding: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .profile-badge-btn:hover {
+      transform: scale(1.18);
+    }
+
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
+    .page-clean-header #burgerBtn {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .page-clean-header #burgerBtn span { color: #0a122c !important; }
+  </style>
+</head>
+<body class="loading-active bg-slate-50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+     <%- include('partials/header') %>
+  </header>
+
+  <main class="w-full relative flex-1 py-10 md:py-14">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
+
+      <!-- 1. بطاقة هوية المستخدم -->
+      <div class="static-card animate-drop-down p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6" dir="ltr">
+        
+        <!-- قسم الهوية والاسم على اليسار تماماً -->
+        <div class="flex items-center gap-4 text-left w-full sm:w-auto">
+          <div class="relative shrink-0">
+            <img src="<%= user.avatar %>" alt="<%= user.username %>" class="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl border-2 border-slate-100 object-cover shadow-xs" onerror="this.src='/logo.png'">
+          </div>
+          
+          <div>
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight"><%= user.global_name || user.username %></h1>
+              
+              <!-- حاوية الشارات النظيفة (أيقونات فقط مع تول تيب ومودال) -->
+              <div class="flex items-center gap-1.5 flex-wrap" id="userBadgesContainer"></div>
+            </div>
+
+            <p class="text-xs text-slate-400 font-mono mt-1.5">@<%= user.username %></p>
+          </div>
+        </div>
+
+        <!-- أزرار الإجراءات على اليمين مع تول تيب فوري -->
+        <div class="flex items-center gap-2.5 self-end sm:self-center shrink-0" dir="rtl">
+<% 
+            const allowedCustomBadges = ['veloqra_pro', 'pro', 'veloqra pro', 'veloqra_staff', 'staff', 'veloqra staff'];
+            const canCustomize = (locals.userBadges || []).some(b => {
+              const val = typeof b === 'string' ? b.trim().toLowerCase() : (b.key || b.id || '').trim().toLowerCase();
+              return allowedCustomBadges.includes(val);
+            });
+          %>
+
+          <% if (canCustomize) { %>
+          <div class="has-custom-tooltip">
+            <a href="/profile/customize" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors border border-slate-200/80">
+              <span class="material-symbols-outlined text-xl">palette</span>
+            </a>
+            <div class="custom-tooltip">تخصيص المظهر</div>
+          </div>
+          <% } %>
+
+          <!-- زر تسجيل الخروج -->
+          <div class="has-custom-tooltip">
+            <a href="/logout" class="w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors border border-rose-200/70">
+              <span class="material-symbols-outlined text-xl">logout</span>
+            </a>
+            <div class="custom-tooltip">تسجيل الخروج</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. بطاقات الإحصائيات (المحفظة والمبيعات فقط) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- رصيد فيلو كوين -->
+        <div class="static-card p-5 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 block mb-1">رصيد المحفظة</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-black text-slate-900 font-mono">
+                <%= Number(seller.veloCoins || 0).toLocaleString() %>$
+              </span>
+            </div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-2xl">monetization_on</span>
+          </div>
+        </div>
+
+        <!-- عدد المبيعات -->
+        <div class="static-card p-5 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 block mb-1">المنتجات المباعة</span>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-black text-blue-600 font-mono">
+                <%= seller.salesCount || 0 %>
+              </span>
+            </div>
+          </div>
+          <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-2xl">storefront</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. القوائم المنسدلة التفاعلية (Accordion Menus) للسجلات -->
+      <div class="space-y-3.5">
+        
+        <!-- أ. قائمة سجل الطلبات والتقديمات -->
+        <% 
+          const safeJobApps = (locals.jobApplications && Array.isArray(locals.jobApplications)) ? locals.jobApplications : [];
+          const safeOrders = (locals.orders && Array.isArray(locals.orders)) ? locals.orders : [];
+          const totalOrdersCount = safeOrders.length + safeJobApps.length;
+        %>
+        <div class="static-card overflow-hidden">
+          <button type="button" onclick="toggleAccordion('ordersAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">receipt_long</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل الطلبات</h3>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold font-mono">
+                <%= totalOrdersCount %>
+              </span>
+              <span id="ordersAccordion-icon" class="material-symbols-outlined text-slate-400 transition-transform duration-200">expand_more</span>
+            </div>
+          </button>
+
+          <div id="ordersAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
+            <% if (totalOrdersCount > 0) { %>
+              <div class="space-y-2.5">
+
+                <% safeJobApps.forEach(jApp => { %>
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs">
+                    <div class="flex items-center gap-3">
+                      <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-lg"><%= jApp.icon || 'work' %></span>
+                      </div>
+                      <div>
+                        <h4 class="text-xs sm:text-sm font-extrabold text-slate-900">تقديم: <%= jApp.jobTitle %></h4>
+                        <div class="text-[11px] text-slate-400 font-mono mt-0.5" dir="ltr">
+                          <%= new Date(jApp.appliedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold <%= jApp.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : (jApp.status === 'rejected' ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-200') %>">
+                      <%= jApp.status === 'accepted' ? 'تم القبول' : (jApp.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') %>
+                    </span>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-center text-xs text-slate-400 py-4 font-medium">لا توجد طلبات واردة حالياً</p>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- ب. قائمة سجل المشتريات المدمجة -->
+        <div class="static-card overflow-hidden">
+          <button type="button" onclick="toggleAccordion('purchasesAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">shopping_bag</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل المشتريات</h3>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold font-mono">
+                <%= (seller.purchases && seller.purchases.length) || 0 %>
+              </span>
+              <span id="purchasesAccordion-icon" class="material-symbols-outlined text-slate-400 transition-transform duration-200">expand_more</span>
+            </div>
+          </button>
+
+          <div id="purchasesAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
+            <% if (seller.purchases && seller.purchases.length > 0) { %>
+              <div class="space-y-2.5">
+                <% seller.purchases.slice().reverse().forEach(item => { %>
+                  <div class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs">
+                    <div>
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900"><%= item.productName %></h4>
+                      <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
+                        <span>البائع: <strong class="text-slate-600"><%= item.sellerName %></strong></span>
+                        <span>•</span>
+                        <span class="font-mono" dir="ltr"><%= new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold font-mono">
+                      <%= item.price %>$
+                    </span>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-center text-xs text-slate-400 py-4 font-medium">لم تقم بإتمام أي عملية شراء حتى الآن</p>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- ج. قائمة سجل المخالفات -->
+        <div class="static-card overflow-hidden">
+          <button type="button" onclick="toggleAccordion('violationsAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">gavel</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل المخالفات</h3>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-0.5 rounded-lg <%= (seller.violations && seller.violations.length > 0) ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700' %> text-xs font-bold font-mono">
+                <%= (seller.violations && seller.violations.length) || 0 %>
+              </span>
+              <span id="violationsAccordion-icon" class="material-symbols-outlined text-slate-400 transition-transform duration-200">expand_more</span>
+            </div>
+          </button>
+
+          <div id="violationsAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
+            <% if (seller.violations && seller.violations.length > 0) { %>
+              <div class="space-y-2.5">
+                <% seller.violations.slice().reverse().forEach(v => { %>
+                  <div class="p-3.5 rounded-xl bg-rose-50/60 border border-rose-200/80 flex items-start justify-between gap-3">
+                    <div>
+                      <span class="inline-block px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-extrabold mb-1"><%= v.severity %></span>
+                      <p class="text-xs font-bold text-slate-800"><%= v.reason %></p>
+                      <span class="text-[10px] text-slate-400 font-mono block mt-1" dir="ltr">
+                        <%= new Date(v.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                      </span>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <div class="text-center text-xs text-slate-400 py-4 font-medium">
+                <span>سجلك نظيف ومثالي، لا توجد أي مخالفات مسجلة</span>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- نافذة المودال لعرض تفاصيل الشارة ووصفها عند النقر -->
+  <div id="badgeDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0a122c]/65 backdrop-blur-sm p-4 transition-all">
+    <div class="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-center relative animate-in fade-in zoom-in-95 duration-200">
+      
+      <button type="button" onclick="closeBadgeModal()" class="absolute left-4 top-4 w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center border border-slate-200 cursor-pointer transition-colors">
+        <span class="material-symbols-outlined text-lg">close</span>
+      </button>
+
+      <!-- أيقونة الشارة سادة ونقية بدون خلفيات[cite: 10] -->
+      <div id="modalBadgeIconWrapper" class="flex items-center justify-center mx-auto mb-3">
+        <span id="modalBadgeIcon" class="material-symbols-outlined text-5xl">military_tech</span>
+      </div>
+
+      <h3 id="modalBadgeTitle" class="text-lg font-black text-slate-900 mb-2">اسم الشارة</h3>
+      
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-600 text-xs sm:text-sm leading-relaxed mb-5" id="modalBadgeDesc">
+        وصف وتفاصيل الشارة...
+      </div>
+
+      <button type="button" onclick="closeBadgeModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
+        إغلاق
+      </button>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+
+  <script>
+    // فتح وإغلاق القوائم المنسدلة
+    function toggleAccordion(id) {
+      const panel = document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      if (!panel) return;
+
+      const isHidden = panel.classList.contains('hidden');
+      panel.classList.toggle('hidden', !isHidden);
+      if (icon) {
+        icon.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+    }
+
+    // دوال المودال على النطاق العام للوصول المباشر
+    window.openBadgeModal = function(name, icon, color, description) {
+      const modal = document.getElementById('badgeDetailModal');
+      const modalIcon = document.getElementById('modalBadgeIcon');
+      const modalTitle = document.getElementById('modalBadgeTitle');
+      const modalDesc = document.getElementById('modalBadgeDesc');
+
+      if (!modal) return;
+
+      modalTitle.textContent = name || 'شارة فيلوكرا';
+      modalIcon.textContent = icon || 'military_tech';
+      modalIcon.style.color = color || '#3b82f6';
+      modalDesc.textContent = description || 'لايوجد وصف';
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    };
+
+    window.closeBadgeModal = function() {
+      const modal = document.getElementById('badgeDetailModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('badgeDetailModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) closeBadgeModal();
+        });
+      }
+
+      // بناء الشارات
+      const container = document.getElementById('userBadgesContainer');
+      if (!container) return;
+
+      const rawUserBadges = <%- JSON.stringify(locals.userBadges || []) %>;
+      const rawSystemBadges = <%- JSON.stringify(locals.systemBadges || []) %>;
+
+      const badgesMap = {};
+      (rawSystemBadges || []).forEach(b => {
+        if (b && b.key) {
+          badgesMap[b.key.toLowerCase()] = {
+            name: b.name || b.key,
+            icon: b.icon || 'military_tech',
+            color: b.color || '#3b82f6',
+            description: b.description || ''
+          };
+        }
+      });
+
+      if (!badgesMap['staff']) {
+        badgesMap['staff'] = { name: 'Veloqra Staff', icon: 'shield_person', color: '#6366f1', description: 'شارة مخصصة لأعضاء طاقم الإدارة العليا في منصة ومجتمع فيلوكرا.' };
+      }
+      if (!badgesMap['veloqra_pro']) {
+        badgesMap['veloqra_pro'] = { name: 'Veloqra Pro', icon: 'stars', color: '#ffd000', description: 'عضوية فيلوكرا المميزة التي تتيح تخصيص المظهر وامتيازات متقدمة.' };
+      }
+
+      const sanitizedKeys = (rawUserBadges || []).map(item => {
+        if (!item) return '';
+        if (typeof item === 'string') return item.trim().toLowerCase();
+        if (typeof item === 'object') return (item.key || item.id || '').trim().toLowerCase();
+        return '';
+      }).filter(Boolean);
+
+      const uniqueBadgeKeys = [...new Set(sanitizedKeys)];
+
+      if (uniqueBadgeKeys.length > 0) {
+        container.innerHTML = '';
+        uniqueBadgeKeys.forEach(key => {
+          const badge = badgesMap[key] || {
+            name: key.replace(/_/g, ' '),
+            icon: 'military_tech',
+            color: '#3b82f6',
+            description: 'لايوجد وصف'
+          };
+
+          const wrapper = document.createElement('div');
+          wrapper.className = 'has-custom-tooltip';
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'profile-badge-btn';
+          btn.innerHTML = `<span class="material-symbols-outlined text-lg sm:text-xl" style="color: ${badge.color};">${badge.icon}</span>`;
+          
+          btn.addEventListener('click', () => {
+            openBadgeModal(badge.name, badge.icon, badge.color, badge.description);
+          });
+
+          const tooltip = document.createElement('div');
+          tooltip.className = 'custom-tooltip';
+          tooltip.textContent = badge.name;
+
+          wrapper.appendChild(btn);
+          wrapper.appendChild(tooltip);
+          container.appendChild(wrapper);
+        });
+      } else {
+        container.innerHTML = '';
+      }
+    });
+  </script>
+</body>
+</html>

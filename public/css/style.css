@@ -1,0 +1,742 @@
+/* --- الألوان والأنماط الأساسية (هوية Veloqra المظلمة - #0C1117) --- */
+:root {
+    --bg-color: #080B10;          /* أسود عميق يبرز التوهج والزجاج بوضوح */
+    --card-bg: rgba(16, 22, 34, 0.65);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --card-hover-border: rgba(245, 158, 11, 0.55);
+    
+    /* ذهبي ناري مشبع ودافئ بدلاً من الأصفر الشاحب */
+    --primary-accent: #F59E0B;     
+    --secondary-accent: #FDE68A;   
+    --accent-glow: rgba(245, 158, 11, 0.28);
+    
+    --text-main: #F8FAFC;
+    --text-muted: #94A3B8;
+    --shadow-subtle: 0 18px 40px -10px rgba(0, 0, 0, 0.7);
+    --shadow-hover: 0 25px 50px -10px rgba(245, 158, 11, 0.2);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'IBM Plex Sans Arabic', sans-serif;
+}
+
+body, html {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+    scroll-behavior: smooth;
+}
+
+/* --- خلفية التوهج المظلمة والشبكة الهندسية --- */
+.ambient-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+    background-color: var(--bg-color);
+}
+
+.grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+}
+
+.orb-1 {
+    top: -10%;
+    right: 8%;
+    width: 550px;
+    height: 550px;
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.32), rgba(180, 83, 9, 0.12), transparent 70%);
+}
+
+.orb-2 {
+    bottom: 5%;
+    left: -8%;
+    width: 620px;
+    height: 620px;
+    background: radial-gradient(circle, rgba(30, 58, 138, 0.25), rgba(15, 23, 42, 0.08), transparent 70%);
+    animation-delay: -9s;
+}
+
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    100% { transform: translate(40px, 60px) scale(1.1); }
+}
+
+/* --- شاشة التحميل --- */
+#loader-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s;
+    pointer-events: none;
+}
+
+body.is-loaded #loader-container {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.minimal-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(229, 193, 88, 0.12);
+    border-top-color: var(--primary-accent);
+    border-radius: 50%;
+    animation: spin 0.8s cubic-bezier(0.6, 0.2, 0.1, 1) infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* --- الهيكل الرئيسي والزجاج (Glassmorphism) --- */
+#main-content {
+    opacity: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.glass-element {
+    background: var(--card-bg);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-subtle);
+}
+
+/* --- الهيدر (Header) --- */
+header {
+    margin: 1.5rem 8% 0 8%;
+    padding: 0.85rem 2.5rem;
+    border-radius: 100px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    position: relative;
+}
+
+.logo-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-accent) 0%, var(--secondary-accent) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid rgba(229, 193, 88, 0.25);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    -webkit-text-fill-color: initial;
+}
+
+nav {
+    display: flex;
+    gap: 2.2rem;
+    align-items: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+nav a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+nav a:hover, nav a.active {
+    color: var(--primary-accent);
+    text-shadow: 0 0 12px rgba(229, 193, 88, 0.3);
+}
+
+.burger-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-main);
+}
+
+/* --- الهيرو (Hero) --- */
+.hero-open {
+    padding: 5rem 8% 5.5rem 8%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    margin-top: 1rem;
+}
+
+.hero-content {
+    max-width: 850px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+}
+
+.hero-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 20px;
+    border-radius: 50px;
+    background: rgba(229, 193, 88, 0.08);
+    border: 1px solid rgba(229, 193, 88, 0.22);
+    font-size: 0.88rem;
+    color: var(--secondary-accent);
+    font-weight: 600;
+    margin-bottom: 1.8rem;
+    backdrop-filter: blur(10px);
+}
+
+.pill-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--primary-accent);
+    box-shadow: 0 0 10px var(--primary-accent);
+    animation: pulseGlow 2s infinite alternate;
+}
+
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -1.5px;
+    color: var(--text-main);
+    margin-bottom: 1.5rem;
+}
+
+.text-gradient {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 50%, #FFFBEB 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 25px rgba(245, 158, 11, 0.35));
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    max-width: 650px;
+    line-height: 1.8;
+    margin-bottom: 2.8rem;
+}
+
+/* --- الأزرار --- */
+.hero-actions {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 15;
+}
+
+.cta-btn {
+    text-decoration: none;
+}
+
+.cta-btn.primary {
+    background: linear-gradient(135deg, #FBBF24 0%, #D97706 100%);
+    color: #080B10;
+    padding: 0.95rem 2.4rem;
+    border-radius: 50px;
+    border: none;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+}
+
+.cta-btn.primary:hover {
+    box-shadow: 0 15px 42px rgba(245, 158, 11, 0.5);
+}
+
+.cta-btn .material-symbols-rounded {
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.cta-btn:hover .material-symbols-rounded {
+    transform: translateX(-6px);
+}
+
+.cta-btn.secondary {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--card-border);
+    color: var(--text-main);
+    padding: 0.95rem 2.2rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
+    display: inline-flex;
+    align-items: center;
+}
+
+.cta-btn.secondary:hover {
+    background: rgba(255, 255, 255, 0.09);
+    border-color: rgba(229, 193, 88, 0.35);
+    transform: translateY(-2px);
+}
+
+/* --- عناصر الخلفية العائمة --- */
+.hero-floating-shapes {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: visible;
+}
+
+.floating-icon {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: rgba(22, 29, 41, 0.6);
+    border: 1px solid rgba(229, 193, 88, 0.18);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    color: var(--primary-accent);
+    opacity: 0.45;
+    animation: floatIcon 7s ease-in-out infinite alternate;
+}
+
+.floating-icon .material-symbols-rounded {
+    font-size: 24px;
+}
+
+.shape-1 { top: 8%; right: 8%; animation-duration: 6.5s; }
+.shape-2 { top: 14%; left: 6%; animation-duration: 8s; animation-delay: -2s; }
+.shape-3 { bottom: 18%; right: 10%; animation-duration: 7s; animation-delay: -4s; }
+.shape-4 { bottom: 15%; left: 8%; animation-duration: 9s; animation-delay: -1.5s; }
+
+.floating-shape { position: absolute; pointer-events: none; }
+
+.dot-1 {
+    top: 15%; left: 28%;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--primary-accent);
+    animation: pulseGlow 3.5s ease-in-out infinite alternate;
+}
+
+.dot-2 {
+    bottom: 25%; right: 28%;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--secondary-accent);
+    animation: pulseGlow 4.5s ease-in-out infinite alternate-reverse;
+}
+
+.ring-1 {
+    top: 30%; right: 4%;
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    border: 1.5px dashed rgba(229, 193, 88, 0.22);
+    animation: rotateRing 20s linear infinite;
+}
+
+@keyframes floatIcon {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-16px) rotate(4deg); }
+    100% { transform: translateY(-4px) rotate(-3deg); }
+}
+
+@keyframes pulseGlow {
+    0% { transform: scale(1); opacity: 0.25; }
+    100% { transform: scale(1.5); opacity: 0.65; }
+}
+
+@keyframes rotateRing {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* --- رؤوس الأقسام --- */
+.section-header {
+    text-align: center;
+    margin-bottom: 3.5rem;
+}
+
+.section-tag {
+    color: var(--primary-accent);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: block;
+    margin-bottom: 0.6rem;
+}
+
+.section-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+/* --- قسم الخدمات Bento Grid --- */
+.services-section {
+    padding: 4rem 8% 6rem 8%;
+}
+
+.bento-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.bento-card {
+    border-radius: 28px;
+    padding: 2.4rem;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 1.5rem;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background: var(--card-bg);
+}
+
+.bento-card:hover {
+    transform: translateY(-7px);
+    border-color: var(--card-hover-border);
+    box-shadow: var(--shadow-hover);
+    background: rgba(28, 37, 52, 0.7);
+}
+
+.bento-card.featured-card {
+    grid-column: span 2;
+    background: linear-gradient(135deg, rgba(16, 22, 34, 0.85) 0%, rgba(245, 158, 11, 0.08) 100%);
+}
+
+.bento-card.wide-card {
+    grid-column: span 2;
+}
+
+.card-badge {
+    position: absolute;
+    top: 1.6rem;
+    left: 1.6rem;
+    background: rgba(229, 193, 88, 0.12);
+    border: 1px solid rgba(229, 193, 88, 0.3);
+    color: var(--primary-accent);
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.card-icon-wrapper {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: rgba(229, 193, 88, 0.08);
+    border: 1px solid rgba(229, 193, 88, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.bento-card:hover .card-icon-wrapper {
+    background: rgba(229, 193, 88, 0.15);
+    transform: scale(1.05);
+}
+
+.card-icon-wrapper .material-symbols-rounded {
+    color: var(--primary-accent);
+    font-size: 28px;
+}
+
+.bento-card h3 {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.bento-card p {
+    color: var(--text-muted);
+    font-size: 0.98rem;
+    line-height: 1.75;
+}
+
+/* --- قسم الأسئلة الشائعة (FAQ) --- */
+.faq-section {
+    padding: 0 8% 6rem 8%;
+}
+
+.faq-container {
+    max-width: 850px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+}
+
+.faq-item {
+    border-radius: 20px;
+    overflow: hidden;
+    background: var(--card-bg);
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover, .faq-item.active {
+    border-color: var(--card-hover-border);
+    background: rgba(28, 37, 52, 0.65);
+}
+
+.faq-trigger {
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+    color: var(--text-main);
+}
+
+.faq-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.faq-title .material-symbols-rounded {
+    color: var(--primary-accent);
+}
+
+.faq-trigger .chevron {
+    transition: transform 0.3s ease;
+    color: var(--text-muted);
+}
+
+.faq-content {
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 100%;
+}
+
+.faq-content-inner {
+    padding: 0 2rem 1.5rem 2rem;
+}
+
+.faq-item.active .faq-trigger .chevron {
+    transform: rotate(180deg);
+    color: var(--primary-accent);
+}
+
+.faq-content p {
+    font-size: 1rem;
+    color: var(--text-muted);
+    line-height: 1.8;
+}
+
+/* --- الفوتر (Footer) --- */
+footer {
+    background: rgba(12, 17, 23, 0.85);
+    backdrop-filter: blur(24px);
+    border-top: 1px solid var(--card-border);
+    padding: 4rem 8% 2rem 8%;
+    margin-top: auto;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 3rem;
+    margin-bottom: 3.5rem;
+}
+
+.footer-brand h3 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary-accent), var(--secondary-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1rem;
+}
+
+.footer-brand p {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+    max-width: 320px;
+}
+
+.footer-links h4 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: var(--text-main);
+}
+
+.footer-links ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--primary-accent);
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--card-border);
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.footer-bottom p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+/* --- التجاوب للشاشات --- */
+@media (max-width: 992px) {
+    .bento-grid { grid-template-columns: 1fr; }
+    .bento-card.featured-card, .bento-card.wide-card { grid-column: span 1; }
+    .hero-title { font-size: 2.8rem; }
+}
+
+@media (max-width: 768px) {
+    header { margin: 1rem 4% 0 4%; padding: 0.8rem 1.5rem; }
+    .burger-menu-btn { display: block; }
+    .hero-open { padding-top: 3rem; }
+
+nav {
+        position: absolute;
+        top: calc(100% + 14px);
+        left: 0;
+        right: 0;
+        transform: translateY(-12px);
+        /* خلفية سوداء عميقة منسجمة مع #080B10 وتوهج ذهبي خافت من الأعلى */
+        background: linear-gradient(180deg, rgba(18, 22, 32, 0.96) 0%, rgba(10, 14, 20, 0.98) 100%);
+        backdrop-filter: blur(28px) saturate(190%);
+        -webkit-backdrop-filter: blur(28px) saturate(190%);
+        border: 1px solid rgba(245, 158, 11, 0.18);
+        border-radius: 22px;
+        padding: 1.5rem 1.8rem;
+        flex-direction: column;
+        gap: 0.5rem;
+        /* ظل عميق مع مسحة توهج كهرماني خفيفة */
+        box-shadow: 0 25px 50px -10px rgba(0, 0, 0, 0.85), 0 0 30px -5px rgba(245, 158, 11, 0.12);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    nav.mobile-active {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+    }
+
+    /* تحسين روابط القائمة لتتناسق وتصبح أزراراً لمسية فخمة */
+    nav a {
+        display: flex;
+        align-items: center;
+        padding: 0.85rem 1.2rem;
+        border-radius: 12px;
+        color: var(--text-muted);
+        font-size: 1rem;
+        font-weight: 600;
+        transition: all 0.25s ease;
+        background: transparent;
+    }
+
+    nav a:hover, nav a.active {
+        color: #FFFBEB;
+        background: rgba(245, 158, 11, 0.12);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        text-shadow: 0 0 14px rgba(245, 158, 11, 0.4);
+        transform: translateX(-4px);
+    }
+
+    nav.mobile-active {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+    }
+
+    .floating-icon { width: 38px; height: 38px; opacity: 0.25; }
+    .floating-icon .material-symbols-rounded { font-size: 18px; }
+    .shape-1 { top: 5%; right: 4%; }
+    .shape-2 { top: 8%; left: 4%; }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: #0C1117; }
+::-webkit-scrollbar-thumb {
+    background: rgba(229, 193, 88, 0.25);
+    border-radius: 20px;
+    border: 2px solid #0C1117;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary-accent); }

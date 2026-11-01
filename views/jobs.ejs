@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - الانضمام للفريق والوظائف</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="shortcut icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+
+  <!-- Meta Tags -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Veloqra">
+  <meta property="og:title" content="Veloqra - انضم إلى فريق العمل">
+  <meta property="og:description" content="اكتشف الفرص المتاحة وكن جزءاً من فريق تطوير وإدارة منصة فيلوكرا">
+  <meta property="og:image" content="/logo.png">
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffd000'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
+    .page-clean-header nav .hidden.md\:block a {
+      background-color: #0a122c !important;
+      color: #ffffff !important;
+      border-color: #0a122c !important;
+    }
+    .page-clean-header #burgerBtn {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .page-clean-header #burgerBtn span { color: #0a122c !important; }
+
+    .job-card-modern {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 1.4rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .job-card-modern:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(10, 18, 44, 0.08);
+    }
+
+    @keyframes iconShake {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      20% { transform: rotate(-16deg) scale(1.15); }
+      40% { transform: rotate(14deg) scale(1.15); }
+      60% { transform: rotate(-10deg) scale(1.1); }
+      80% { transform: rotate(8deg) scale(1.05); }
+    }
+    @keyframes buttonShake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .job-btn-locked {
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .job-btn-locked:hover {
+      border-color: rgba(239, 68, 68, 0.35) !important;
+      background-color: #fff1f2 !important;
+      color: #e11d48 !important;
+    }
+    .job-btn-locked:hover .lock-icon {
+      animation: iconShake 0.45s ease-in-out;
+      color: #e11d48 !important;
+    }
+    .job-btn-locked.btn-shaking {
+      animation: buttonShake 0.35s ease-in-out !important;
+    }
+  </style>
+</head>
+<body class="loading-active bg-white text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30 bg-white">
+    <%- include('../partials/dheader') %>
+  </header>
+
+  <main class="w-full relative flex-1 bg-white py-10 md:py-14">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+      <!-- رأس القسم -->
+      <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
+          فرص الانضمام والوظائف
+        </h1>
+        <p class="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
+          اكتشف الفرص المتاحة وكن جزءاً من فريق تطوير وإدارة منصة فيلوكرا
+        </p>
+      </div>
+
+      <!-- شبكة الكروت -->
+      <% if (!jobs || jobs.length === 0) { %>
+        <div class="py-16 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-center max-w-md mx-auto">
+          <div class="w-14 h-14 rounded-2xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <span class="material-symbols-outlined text-3xl">work_off</span>
+          </div>
+          <h4 class="text-sm font-extrabold text-slate-800">لا توجد شواغر معلنة حالياً</h4>
+          <p class="text-xs text-slate-500 mt-1">تابعنا على ديسكورد لمعرفة أحدث الفرص فور فتح باب التقديم</p>
+        </div>
+      <% } else { %>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="jobsContainer">
+          <% jobs.forEach(job => { %>
+            <div class="job-card-modern">
+              <div>
+                <!-- رأس الكرت -->
+                <div class="flex items-center justify-between gap-2 mb-3">
+                  <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-xl"><%= job.icon || 'work' %></span>
+                    </div>
+                    <div>
+                      <h3 class="font-bold text-slate-900 text-base"><%= job.title %></h3>
+                      <span class="text-[11px] text-slate-400 font-bold block"><%= job.department || 'عام' %></span>
+                    </div>
+                  </div>
+                  <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold <%= job.status === 'open' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-rose-50 text-rose-600 border border-rose-200' %>">
+                    <span class="w-1.5 h-1.5 rounded-full <%= job.status === 'open' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500' %>"></span>
+                    <%= job.status === 'open' ? 'متاح للتقديم' : 'مغلق' %>
+                  </span>
+                </div>
+
+                <!-- الوصف (يدعم الحقلين description و desc) -->
+                <p class="text-slate-600 text-xs sm:text-sm leading-relaxed mb-3.5 min-h-[44px]">
+                  <%= job.description || job.desc || 'لا يوجد وصف مضاف لهذا الشاغر.' %>
+                </p>
+
+                <!-- الشروط -->
+                <% if (job.requirements && job.requirements.length > 0) { %>
+                  <div class="mb-3.5 pt-2.5 border-t border-dashed border-slate-200/90">
+                    <span class="text-[10px] font-extrabold text-slate-400 block mb-1.5 uppercase tracking-wider">شروط الانضمام:</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-slate-600">
+                      <% job.requirements.forEach(req => { %>
+                        <div class="flex items-center gap-1.5 truncate" title="<%= req %>">
+                          <span class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0"></span>
+                          <span class="truncate font-medium"><%= req %></span>
+                        </div>
+                      <% }) %>
+                    </div>
+                  </div>
+                <% } %>
+              </div>
+
+              <!-- زر الإجراء -->
+              <div class="pt-3 border-t border-slate-100">
+                <% if (job.status === 'open') { %>
+                  <button 
+                    type="button" 
+                    class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs inline-flex items-center justify-center gap-2 select-none shadow-sm transition-colors cursor-pointer border-none"
+                    onclick="openApplyModal('<%= job._id %>', '<%= job.title %>')"
+                  >
+                    <span class="material-symbols-outlined text-sm">send</span>
+                    <span>تقديم طلب انضمام</span>
+                  </button>
+                <% } else { %>
+                  <button 
+                    type="button" 
+                    class="job-btn-locked w-full py-2.5 px-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-500 font-bold text-xs inline-flex items-center justify-center gap-2 select-none active:scale-[0.98]"
+                    onclick="handleButtonShake(this)"
+                  >
+                    <span class="material-symbols-outlined text-sm lock-icon inline-block">lock</span>
+                    <span>الوظيفة مغلقة حالياً</span>
+                  </button>
+                <% } %>
+              </div>
+
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+
+    </div>
+  </main>
+
+  <!-- مودال التقديم للوظيفة -->
+  <div id="applyModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+    <div class="bg-white border border-slate-200 rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative">
+      <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">badge</span>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900" id="modalJobTitle">تقديم طلب انضمام</h3>
+            <span class="text-[11px] text-slate-400">يرجى تعبئة بياناتك بدقة لتتم مراجعتها من قبل الإدارة</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeApplyModal()" class="text-slate-400 hover:text-slate-600 bg-transparent border-none cursor-pointer">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <% if (user) { %>
+        <!-- نموذج التقديم للشخص المسجل -->
+        <form action="/discord/jobs/apply" method="POST" class="space-y-4">
+          <input type="hidden" name="jobId" id="modalJobId" value="">
+
+          <div class="p-3 bg-blue-50/70 border border-blue-100 rounded-xl flex items-center gap-3">
+            <img src="<%= user.avatar %>" alt="avatar" class="w-9 h-9 rounded-lg object-cover" onerror="this.src='/logo.png'">
+            <div>
+              <p class="text-xs font-bold text-slate-800"><%= user.global_name || user.username %></p>
+              <p class="text-[10px] text-slate-500 font-mono" dir="ltr">@<%= user.username %> • ID: <%= user.id %></p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">اسمك الكامل <span class="text-rose-500">*</span></label>
+              <input type="text" name="fullName" required placeholder="محمد..." 
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">العمر <span class="text-rose-500">*</span></label>
+              <input type="number" name="age" required min="12" max="60" placeholder="18" 
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">الخبرات والمهارات (بشكل مفصل) <span class="text-rose-500">*</span></label>
+            <textarea name="experience" rows="3" required placeholder="تحدث عن خبرتك السابقة في المجال ولماذا أنت الأنسب لهذا المنصب..."
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">سبب الرغبة بالانضمام</label>
+            <textarea name="reason" rows="2" placeholder="ما الذي يحفزك للعمل معنا في فيلوكرا؟"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-blue-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">رابط معرض الأعمال أو السيرة (إن وجد)</label>
+            <input type="url" name="portfolio" placeholder="https://github.com/... أو رابط أعمالك" dir="ltr"
+              class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm focus:bg-white focus:outline-none focus:border-blue-500 font-mono">
+          </div>
+
+          <div class="flex items-center gap-3 pt-2">
+            <button type="submit" class="flex-1 py-3 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition-colors cursor-pointer border-none flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-base">send</span>
+              <span>إرسال التقديم</span>
+            </button>
+            <button type="button" onclick="closeApplyModal()" class="py-3 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
+              إلغاء
+            </button>
+          </div>
+        </form>
+      <% } else { %>
+        <div class="text-center py-6 space-y-4">
+          <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto">
+            <span class="material-symbols-outlined text-3xl">login</span>
+          </div>
+          <div>
+            <h4 class="text-base font-extrabold text-slate-900">تسجيل الدخول مطلوب</h4>
+            <p class="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+              يجب تسجيل دخولك عبر ديسكورد لتتمكن من تقديم طلب التوظيف وتوثيق حسابك رسمياً
+            </p>
+          </div>
+          <div class="pt-2 flex justify-center gap-3">
+            <a href="/auth/discord" class="py-2.5 px-6 rounded-xl bg-[#5865F2] hover:bg-[#4752C4] text-white font-bold text-xs flex items-center gap-2 transition-colors">
+              <span class="material-symbols-outlined text-base">login</span>
+              <span>تسجيل الدخول عبر ديسكورد</span>
+            </a>
+            <button type="button" onclick="closeApplyModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs border border-slate-200">
+              إغلاق
+            </button>
+          </div>
+        </div>
+      <% } %>
+
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+  <script>
+    const modal = document.getElementById('applyModal');
+    const modalJobTitle = document.getElementById('modalJobTitle');
+    const modalJobId = document.getElementById('modalJobId');
+
+    function openApplyModal(jobId, jobTitle) {
+      if (modalJobTitle) modalJobTitle.textContent = `تقديم طلب: ${jobTitle}`;
+      if (modalJobId) modalJobId.value = jobId;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeApplyModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeApplyModal();
+    });
+
+    function handleButtonShake(btn) {
+      btn.classList.remove('btn-shaking');
+      void btn.offsetWidth;
+      btn.classList.add('btn-shaking');
+      setTimeout(() => {
+        btn.classList.remove('btn-shaking');
+      }, 350);
+    }
+  </script>
+
+  <script src="/js/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - تخصيص مظهر البروفايل</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .form-section-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.5rem;
+      padding: 1.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
+    }
+    .field-label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #334155;
+      margin-bottom: 0.35rem;
+    }
+    .input-box {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border-radius: 0.75rem;
+      background-color: #f8fafc;
+      border: 1px solid #e2e8f0;
+      font-size: 0.85rem;
+      color: #0a122c;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+    .input-box:focus {
+      background-color: #ffffff;
+      border-color: #0a122c;
+      box-shadow: 0 0 0 3px rgba(10, 18, 44, 0.06);
+    }
+
+    .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.15rem;
+      border-radius: 1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #64748b;
+      background: #f1f5f9;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: #0a122c;
+      background: #e2e8f0;
+    }
+    .tab-btn.active {
+      background: #0a122c !important;
+      color: #ffffff !important;
+      border-color: #0a122c !important;
+      box-shadow: 0 4px 14px rgba(10, 18, 44, 0.15);
+    }
+
+    /* Modal System */
+    .custom-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 44, 0.65);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .custom-modal-backdrop.show { display: flex !important; }
+
+    #toastNotification {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      box-shadow: 0 20px 40px -8px rgba(10, 18, 44, 0.25);
+      transform: translateY(150%);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #toastNotification.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
+    .page-clean-header #burgerBtn {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .page-clean-header #burgerBtn span { color: #0a122c !important; }
+  </style>
+</head>
+<body class="loading-active bg-[#fbfcfd] text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <div id="toastNotification" class="bg-[#0a122c] text-white border border-slate-700">
+    <span class="material-symbols-outlined text-xl text-[#ffd000]" id="toastIcon">check_circle</span>
+    <span id="toastMessage">تم الحفظ بنجاح</span>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+     <%- include('partials/header') %>
+  </header>
+
+  <%
+    const theme = (dbUser && dbUser.customTheme) ? dbUser.customTheme : {};
+    const overlay = theme.entryOverlay || {};
+    const myBadges = Array.isArray(dbUser.badges) ? dbUser.badges : [];
+    
+    // إذا كان displayedBadges غير معرّف أبداً في قاعدة البيانات، نعرض كل الشارات افتراضياً، أما إذا كان مصفوفة (حتى لو فارغة) فنعتمدها
+    const hasConfiguredBadges = Array.isArray(dbUser.displayedBadges);
+    const displayedBadgesList = hasConfiguredBadges ? dbUser.displayedBadges : myBadges;
+
+    const badgesDict = {};
+    (locals.systemBadges || []).forEach(b => {
+      if (b && b.key) badgesDict[b.key.toLowerCase()] = b;
+    });
+    if (!badgesDict['staff']) badgesDict['staff'] = { name: 'Veloqra Staff', icon: 'shield_person', color: '#6366f1' };
+    if (!badgesDict['veloqra_pro']) badgesDict['veloqra_pro'] = { name: 'Veloqra Pro', icon: 'stars', color: '#ffd000' };
+    if (!badgesDict['verified_seller']) badgesDict['verified_seller'] = { name: 'Verified Seller', icon: 'verified', color: '#10b981' };
+  %>
+
+  <main class="w-full relative flex-1 py-8 md:py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
+
+      <!-- ترويسة الصفحة -->
+      <div class="flex items-center justify-between pb-4 border-b border-slate-200/80 flex-wrap gap-4">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0a122c]/5 text-[#0a122c] border border-slate-200 mb-2">
+            <span class="material-symbols-outlined text-sm">palette</span>
+            <span>ميزة حصرية: Veloqra Pro & Staff</span>
+          </div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">تخصيص مظهر بروفايلك</h1>
+          <p class="text-xs sm:text-sm text-slate-500 mt-1">خصص مظهر صفحتك، شاراتك المعروضة، والروابط بطريقة ذكية</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+          <a href="/users/<%= dbUser.customSlug || user.id %>" target="_blank" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1.5 border border-slate-200">
+            <span class="material-symbols-outlined text-base">open_in_new</span>
+            <span>معاينة صفحتك</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- التبويبات العلوية -->
+      <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-inner-scroll" id="tabsHeader">
+        <button type="button" onclick="switchTab('tab-identity')" class="tab-btn active" id="btn-tab-identity">
+          <span class="material-symbols-outlined text-base">badge</span>
+          <span>الهوية والرابط</span>
+        </button>
+
+        <button type="button" onclick="switchTab('tab-badges')" class="tab-btn" id="btn-tab-badges">
+          <span class="material-symbols-outlined text-base">military_tech</span>
+          <span>عرض الشارات</span>
+        </button>
+
+        <button type="button" onclick="switchTab('tab-background')" class="tab-btn" id="btn-tab-background">
+          <span class="material-symbols-outlined text-base">wallpaper</span>
+          <span>الخلفية والكرت</span>
+        </button>
+
+        <button type="button" onclick="switchTab('tab-colors')" class="tab-btn" id="btn-tab-colors">
+          <span class="material-symbols-outlined text-base">brush</span>
+          <span>الألوان والخطوط</span>
+        </button>
+
+        <button type="button" onclick="switchTab('tab-overlay')" class="tab-btn" id="btn-tab-overlay">
+          <span class="material-symbols-outlined text-base">touch_app</span>
+          <span>شاشة الدخول</span>
+        </button>
+
+        <button type="button" onclick="switchTab('tab-links')" class="tab-btn" id="btn-tab-links">
+          <span class="material-symbols-outlined text-base">share</span>
+          <span>العناصر والروابط</span>
+        </button>
+      </div>
+
+      <!-- النموذج الرئيسي -->
+      <form id="customizeForm" onsubmit="handleSave(event)" class="space-y-6">
+
+        <input type="hidden" name="customTextsJson" id="customTextsJsonInput">
+        <input type="hidden" name="socialLinksJson" id="socialLinksJsonInput">
+
+        <!-- 1. الهوية والرابط المخصص -->
+        <div id="tab-identity" class="tab-content form-section-card space-y-4">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <span class="material-symbols-outlined text-blue-600">badge</span>
+            <h2 class="text-base font-extrabold text-slate-900">الهوية والرابط المخصص</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="field-label">الرابط المخصص (Slug) <span class="text-slate-400 font-mono">(app.veloqra.xyz/users/your-name)</span></label>
+              <input type="text" name="customSlug" value="<%= dbUser.customSlug || '' %>" placeholder="مثال: mohammad" class="input-box font-mono" dir="ltr">
+            </div>
+
+            <div>
+              <label class="field-label">تفعيل الثيم المخصص</label>
+              <select name="themeEnabled" class="input-box font-bold cursor-pointer">
+                <option value="true" <%= theme.enabled ? 'selected' : '' %>>مفعّل</option>
+                <option value="false" <%= !theme.enabled ? 'selected' : '' %>>معطّل (استخدام التصميم القياسي)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="field-label">النبذة التعريفية (About Me)</label>
+            <textarea name="aboutText" rows="3" placeholder="اكتب نبذة مختصرة عنك تظهر في صفحتك..." class="input-box"><%= dbUser.about || '' %></textarea>
+          </div>
+        </div>
+
+        <!-- 2. تحديد الشارات المعروضة -->
+        <div id="tab-badges" class="tab-content form-section-card space-y-4 hidden">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-amber-500">military_tech</span>
+              <h2 class="text-base font-extrabold text-slate-900">الشارات المعروضة في بروفايلك</h2>
+            </div>
+            <span class="text-xs text-slate-400">حدد فقط الشارات التي ترغب بإظهارها</span>
+          </div>
+
+          <% if (myBadges && myBadges.length > 0) { %>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="badgesCheckboxesList">
+              <% myBadges.forEach(bKey => { %>
+                <% 
+                  const cleanK = (typeof bKey === 'string' ? bKey : (bKey.key || '')).trim().toLowerCase();
+                  const badgeInfo = badgesDict[cleanK] || { name: cleanK, icon: 'military_tech', color: '#3b82f6' };
+                  const isChecked = displayedBadgesList.includes(cleanK) || displayedBadgesList.includes(bKey);
+                %>
+                <label class="flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 hover:border-slate-300 bg-slate-50/60 cursor-pointer transition-colors">
+                  <div class="flex items-center gap-3">
+                    <span class="material-symbols-outlined text-2xl" style="color: <%= badgeInfo.color %>;"><%= badgeInfo.icon %></span>
+                    <div>
+                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900"><%= badgeInfo.name %></h4>
+                      <span class="text-[10px] font-mono text-slate-400" dir="ltr"><%= cleanK %></span>
+                    </div>
+                  </div>
+                  <input type="checkbox" name="displayedBadges" value="<%= cleanK %>" <%= isChecked ? 'checked' : '' %> class="badge-checkbox w-5 h-5 rounded-lg accent-[#0a122c] cursor-pointer">
+                </label>
+              <% }) %>
+            </div>
+          <% } else { %>
+            <div class="text-center py-8 text-xs text-slate-400">لا توجد شارات مسندة لحسابك حالياً.</div>
+          <% } %>
+        </div>
+
+        <!-- 3. الخلفية ومظهر الكرت -->
+        <div id="tab-background" class="tab-content form-section-card space-y-4 hidden">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <span class="material-symbols-outlined text-amber-600">wallpaper</span>
+            <h2 class="text-base font-extrabold text-slate-900">الخلفية ومظهر الكرت</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="field-label">نوع الخلفية</label>
+              <select name="bgType" class="input-box font-bold cursor-pointer">
+                <option value="color" <%= theme.bgType === 'color' ? 'selected' : '' %>>لون سادة</option>
+                <option value="gradient" <%= theme.bgType === 'gradient' ? 'selected' : '' %>>تدرج لوني (Gradient)</option>
+                <option value="image" <%= theme.bgType === 'image' ? 'selected' : '' %>>صورة خلفية</option>
+                <option value="video" <%= theme.bgType === 'video' ? 'selected' : '' %>>فيديو بدون صوت</option>
+                <option value="video_sound" <%= theme.bgType === 'video_sound' ? 'selected' : '' %>>فيديو مع زر صوت</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label">قيمة الخلفية (كود لون أو رابط مباشر)</label>
+              <div class="flex items-center gap-2">
+                <input type="color" value="<%= (theme.bgValue && theme.bgValue.startsWith('#')) ? theme.bgValue : '#0a122c' %>" oninput="document.getElementById('bgValueInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
+                <input type="text" id="bgValueInput" name="bgValue" value="<%= theme.bgValue || '#0a122c' %>" placeholder="#0a122c أو رابط مباشر MP4 / WebP" class="input-box font-mono" dir="ltr">
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">لون خلفية كرت البروفايل</label>
+              <input type="text" name="cardBg" value="<%= theme.cardBg || 'rgba(255, 255, 255, 0.05)' %>" placeholder="rgba(255, 255, 255, 0.05)" class="input-box font-mono" dir="ltr">
+            </div>
+
+            <div>
+              <label class="field-label">قوة تغبيش الكرت (Backdrop Blur)</label>
+              <input type="text" name="cardBlur" value="<%= theme.cardBlur || '16px' %>" placeholder="16px" class="input-box font-mono" dir="ltr">
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. الألوان والخطوط والوسائط -->
+        <div id="tab-colors" class="tab-content form-section-card space-y-4 hidden">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <span class="material-symbols-outlined text-purple-600">brush</span>
+            <h2 class="text-base font-extrabold text-slate-900">الألوان والخطوط</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="field-label">لون النصوص الأساسية</label>
+              <div class="flex items-center gap-2">
+                <input type="color" value="<%= (theme.textColor && theme.textColor.startsWith('#')) ? theme.textColor : '#ffffff' %>" oninput="document.getElementById('textColorInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
+                <input type="text" id="textColorInput" name="textColor" value="<%= theme.textColor || '#ffffff' %>" class="input-box font-mono uppercase" dir="ltr">
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">لون التمييز (Accent Color)</label>
+              <div class="flex items-center gap-2">
+                <input type="color" value="<%= (theme.accentColor && theme.accentColor.startsWith('#')) ? theme.accentColor : '#ffd000' %>" oninput="document.getElementById('accentColorInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
+                <input type="text" id="accentColorInput" name="accentColor" value="<%= theme.accentColor || '#ffd000' %>" class="input-box font-mono uppercase" dir="ltr">
+              </div>
+            </div>
+
+            <div>
+              <label class="field-label">نوع الخط</label>
+              <select name="fontFamily" class="input-box font-bold cursor-pointer">
+                <option value="IBM Plex Sans Arabic" <%= theme.fontFamily === 'IBM Plex Sans Arabic' ? 'selected' : '' %>>IBM Plex Sans Arabic</option>
+                <option value="Cairo" <%= theme.fontFamily === 'Cairo' ? 'selected' : '' %>>Cairo</option>
+                <option value="Tajawal" <%= theme.fontFamily === 'Tajawal' ? 'selected' : '' %>>Tajawal</option>
+                <option value="JetBrains Mono" <%= theme.fontFamily === 'JetBrains Mono' ? 'selected' : '' %>>JetBrains Mono</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <div>
+              <label class="field-label">رابط مؤشر ماوس مخصص (Cursor URL)</label>
+              <input type="text" name="customCursorUrl" value="<%= theme.customCursorUrl || '' %>" placeholder="رابط صورة مؤشر .cur أو .png" class="input-box font-mono" dir="ltr">
+            </div>
+
+            <div>
+              <label class="field-label">رابط ملف صوتي يعمل بالخلفية (Audio URL)</label>
+              <input type="text" name="audioUrl" value="<%= theme.audioUrl || '' %>" placeholder="رابط مباشر MP3" class="input-box font-mono" dir="ltr">
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. شاشة الدخول (Click to enter) -->
+        <div id="tab-overlay" class="tab-content form-section-card space-y-4 hidden">
+          <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
+            <span class="material-symbols-outlined text-emerald-600">touch_app</span>
+            <h2 class="text-base font-extrabold text-slate-900">شاشة الدخول (Click to Enter)</h2>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="field-label">حالة شاشة الدخول</label>
+              <select name="entryOverlayEnabled" class="input-box font-bold cursor-pointer">
+                <option value="false" <%= !overlay.enabled ? 'selected' : '' %>>معطّلة</option>
+                <option value="true" <%= overlay.enabled ? 'selected' : '' %>>مفعّلة</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label">النص الظاهر</label>
+              <input type="text" name="entryOverlayText" value="<%= overlay.text || 'Click to enter' %>" placeholder="Click to enter" class="input-box">
+            </div>
+
+            <div>
+              <label class="field-label">نوع خلفية شاشة الدخول</label>
+              <select name="entryOverlayBgType" class="input-box font-bold cursor-pointer">
+                <option value="color" <%= overlay.bgType === 'color' ? 'selected' : '' %>>لون سادة / شفاف</option>
+                <option value="image" <%= overlay.bgType === 'image' ? 'selected' : '' %>>صورة مخصصة</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="field-label">قيمة خلفية شاشة الدخول</label>
+              <div class="flex items-center gap-2">
+                <input type="color" value="<%= (overlay.bgColor && overlay.bgColor.startsWith('#')) ? overlay.bgColor : '#0a122c' %>" oninput="document.getElementById('overlayBgInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
+                <input type="text" id="overlayBgInput" name="entryOverlayBgValue" value="<%= overlay.bgColor || 'rgba(10, 18, 44, 0.96)' %>" class="input-box font-mono" dir="ltr">
+              </div>
+            </div>
+
+            <div class="sm:col-span-2">
+              <label class="field-label">لون نص شاشة الدخول</label>
+              <div class="flex items-center gap-2 max-w-xs">
+                <input type="color" value="<%= (overlay.textColor && overlay.textColor.startsWith('#')) ? overlay.textColor : '#ffffff' %>" oninput="document.getElementById('overlayTextColorInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
+                <input type="text" id="overlayTextColorInput" name="entryOverlayTextColor" value="<%= overlay.textColor || '#ffffff' %>" class="input-box font-mono uppercase" dir="ltr">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. العناصر المخصصة وروابط التواصل -->
+        <div id="tab-links" class="tab-content form-section-card space-y-6 hidden">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-sky-600">loyalty</span>
+                <h3 class="text-sm font-extrabold text-slate-900">الشارات والنصوص والصور المخصصة</h3>
+              </div>
+              <button type="button" onclick="openAddTextModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1 border border-slate-200">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>إضافة عنصر</span>
+              </button>
+            </div>
+
+            <div id="customTextsList" class="space-y-2"></div>
+            <div id="noTextsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لم تقم بإضافة شارات أو نصوص بعد.</div>
+          </div>
+
+          <div class="space-y-3 pt-3 border-t border-slate-100">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">share</span>
+                <h3 class="text-sm font-extrabold text-slate-900">روابط التواصل الاجتماعي</h3>
+              </div>
+              <button type="button" onclick="openAddSocialModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1 border border-slate-200">
+                <span class="material-symbols-outlined text-sm">add</span>
+                <span>إضافة رابط</span>
+              </button>
+            </div>
+
+            <div id="socialLinksList" class="space-y-2"></div>
+            <div id="noSocialsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لا توجد روابط تواصل مسجلة.</div>
+          </div>
+        </div>
+
+        <!-- زر الحفظ الفوري -->
+        <div class="flex items-center gap-3 pt-2">
+          <button type="submit" id="saveBtn" class="flex-1 py-3 px-6 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs transition-all cursor-pointer border border-[#0a122c] hover:border-[#ffd000] shadow-sm flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-lg" id="saveBtnIcon">save</span>
+            <span id="saveBtnTxt">حفظ التعديلات</span>
+          </button>
+          
+          <a href="/profile" class="py-3 px-6 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors border border-slate-200">
+            العودة للملف
+          </a>
+        </div>
+
+      </form>
+
+    </div>
+  </main>
+
+  <!-- مودال إضافة عنصر مخصص -->
+  <div class="custom-modal-backdrop" id="addTextModal">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="text-sm font-extrabold text-slate-900">إضافة عنصر مخصص</h3>
+        <button type="button" onclick="closeAddTextModal()" class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">close</span></button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="field-label">نوع العنصر</label>
+          <select id="modalTextType" onchange="toggleTextTypeFields()" class="input-box font-bold">
+            <option value="badge">نص مع أيقونة</option>
+            <option value="image">صورة مخصصة</option>
+          </select>
+        </div>
+
+        <div id="fieldBadgeIcon">
+          <label class="field-label">رمز الأيقونة (Material Symbol)</label>
+          <input type="text" id="modalTextIcon" placeholder="code أو star أو verified" class="input-box font-mono" dir="ltr">
+        </div>
+
+        <div id="fieldBadgeText">
+          <label class="field-label">النص الظاهر</label>
+          <input type="text" id="modalTextTitle" placeholder="مثال: مطور بايثون" class="input-box">
+        </div>
+
+        <div id="fieldImageUrl" class="hidden">
+          <label class="field-label">رابط الصورة المباشر</label>
+          <input type="text" id="modalImageUrl" placeholder="https://domain.com/badge.webp" class="input-box font-mono" dir="ltr">
+        </div>
+
+        <div>
+          <label class="field-label">رابط عند النقر (اختياري)</label>
+          <input type="text" id="modalTextLink" placeholder="https://..." class="input-box font-mono" dir="ltr">
+        </div>
+
+        <div class="flex items-center gap-2 pt-1">
+          <input type="checkbox" id="modalTextNewLine" class="w-4 h-4 rounded accent-[#0a122c] cursor-pointer">
+          <label for="modalTextNewLine" class="text-xs font-bold text-slate-700 cursor-pointer">النزول في سطر جديد ومستقل</label>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-3">
+        <button type="button" onclick="confirmAddTextItem()" class="flex-1 py-2.5 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs transition-colors">إضافة العنصر</button>
+        <button type="button" onclick="closeAddTextModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة رابط تواصل -->
+  <div class="custom-modal-backdrop" id="addSocialModal">
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h3 class="text-sm font-extrabold text-slate-900">إضافة رابط تواصل</h3>
+        <button type="button" onclick="closeAddSocialModal()" class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">close</span></button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="field-label">اسم الأيقونة أو المنصة</label>
+          <input type="text" id="modalSocialPlatform" placeholder="discord أو link أو code أو mail" class="input-box font-mono" dir="ltr">
+        </div>
+
+        <div>
+          <label class="field-label">عنوان الرابط</label>
+          <input type="text" id="modalSocialTitle" placeholder="سيرفر الديسكورد الرسمي" class="input-box">
+        </div>
+
+        <div>
+          <label class="field-label">رابط الوجهة (URL)</label>
+          <input type="text" id="modalSocialUrl" placeholder="https://discord.gg/..." class="input-box font-mono" dir="ltr">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-3">
+        <button type="button" onclick="confirmAddSocialItem()" class="flex-1 py-2.5 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs transition-colors">إضافة الرابط</button>
+        <button type="button" onclick="closeAddSocialModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+
+  <script>
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+      const targetTab = document.getElementById(tabId);
+      const targetBtn = document.getElementById('btn-' + tabId);
+
+      if (targetTab) targetTab.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+
+    function showToast(message, icon = 'check_circle') {
+      if (!toast) return;
+      toastMsg.innerText = message;
+      toastIcon.innerText = icon;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 3500);
+    }
+
+    let customTextsArray = <%- JSON.stringify(dbUser.customTexts || []) %>;
+    let socialLinksArray = <%- JSON.stringify(dbUser.socialLinks || []) %>;
+
+    function renderCustomTexts() {
+      const container = document.getElementById('customTextsList');
+      const notice = document.getElementById('noTextsNotice');
+      if (!container) return;
+
+      if (customTextsArray.length === 0) {
+        container.innerHTML = '';
+        if (notice) notice.classList.remove('hidden');
+        return;
+      }
+
+      if (notice) notice.classList.add('hidden');
+
+      container.innerHTML = customTextsArray.map((item, idx) => {
+        const isImg = item.type === 'image';
+        return `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center gap-2.5 min-w-0">
+              ${isImg ? `<img src="${item.imageUrl}" class="w-7 h-7 object-contain rounded-md border border-slate-200">` : `<span class="material-symbols-outlined text-lg text-blue-600">${item.icon || 'star'}</span>`}
+              <div class="min-w-0">
+                <h5 class="text-xs font-bold text-slate-800 truncate">${isImg ? 'صورة مخصصة' : item.text}</h5>
+                <span class="text-[10px] text-slate-400 font-mono block">${item.newLine ? 'سطر مستقل' : 'ضمن السطر'}</span>
+              </div>
+            </div>
+            <button type="button" onclick="deleteCustomText(${idx})" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteCustomText(idx) {
+      customTextsArray.splice(idx, 1);
+      renderCustomTexts();
+    }
+
+    function openAddTextModal() {
+      document.getElementById('addTextModal').classList.add('show');
+    }
+    function closeAddTextModal() {
+      document.getElementById('addTextModal').classList.remove('show');
+    }
+
+    function toggleTextTypeFields() {
+      const type = document.getElementById('modalTextType').value;
+      const isImg = type === 'image';
+      document.getElementById('fieldBadgeIcon').classList.toggle('hidden', isImg);
+      document.getElementById('fieldBadgeText').classList.toggle('hidden', isImg);
+      document.getElementById('fieldImageUrl').classList.toggle('hidden', !isImg);
+    }
+
+    function confirmAddTextItem() {
+      const type = document.getElementById('modalTextType').value;
+      const newLine = document.getElementById('modalTextNewLine').checked;
+      const linkUrl = document.getElementById('modalTextLink').value.trim();
+
+      if (type === 'image') {
+        const imageUrl = document.getElementById('modalImageUrl').value.trim();
+        if (!imageUrl) return alert('يرجى وضع رابط الصورة!');
+        customTextsArray.push({ type: 'image', imageUrl, newLine, linkUrl });
+      } else {
+        const icon = document.getElementById('modalTextIcon').value.trim() || 'star';
+        const text = document.getElementById('modalTextTitle').value.trim();
+        if (!text) return alert('يرجى إدخال النص!');
+        customTextsArray.push({ type: 'badge', icon, text, newLine, linkUrl });
+      }
+
+      renderCustomTexts();
+      closeAddTextModal();
+    }
+
+    function renderSocialLinks() {
+      const container = document.getElementById('socialLinksList');
+      const notice = document.getElementById('noSocialsNotice');
+      if (!container) return;
+
+      if (socialLinksArray.length === 0) {
+        container.innerHTML = '';
+        if (notice) notice.classList.remove('hidden');
+        return;
+      }
+
+      if (notice) notice.classList.add('hidden');
+
+      container.innerHTML = socialLinksArray.map((item, idx) => {
+        return `
+          <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="material-symbols-outlined text-lg text-emerald-600">${item.platform || 'link'}</span>
+              <div class="min-w-0">
+                <h5 class="text-xs font-bold text-slate-800 truncate">${item.title}</h5>
+                <span class="text-[10px] text-slate-400 font-mono truncate block" dir="ltr">${item.url}</span>
+              </div>
+            </div>
+            <button type="button" onclick="deleteSocialLink(${idx})" class="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 transition-colors">
+              <span class="material-symbols-outlined text-base">delete</span>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function deleteSocialLink(idx) {
+      socialLinksArray.splice(idx, 1);
+      renderSocialLinks();
+    }
+
+    function openAddSocialModal() {
+      document.getElementById('addSocialModal').classList.add('show');
+    }
+    function closeAddSocialModal() {
+      document.getElementById('addSocialModal').classList.remove('show');
+    }
+
+    function confirmAddSocialItem() {
+      const platform = document.getElementById('modalSocialPlatform').value.trim() || 'link';
+      const title = document.getElementById('modalSocialTitle').value.trim();
+      const url = document.getElementById('modalSocialUrl').value.trim();
+
+      if (!title || !url) return alert('يرجى ملء العنوان والرابط!');
+
+      socialLinksArray.push({ platform, title, url });
+      renderSocialLinks();
+      closeAddSocialModal();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCustomTexts();
+      renderSocialLinks();
+    });
+
+    // معالجة الحفظ بدقة وإرسال الشارات المختارة فعلياً
+    async function handleSave(event) {
+      event.preventDefault();
+      
+      const form = document.getElementById('customizeForm');
+      const btn = document.getElementById('saveBtn');
+      const btnTxt = document.getElementById('saveBtnTxt');
+      const btnIcon = document.getElementById('saveBtnIcon');
+
+      btn.disabled = true;
+      btnTxt.innerText = 'جاري الحفظ...';
+      btnIcon.innerText = 'sync';
+      btnIcon.classList.add('animate-spin');
+
+      document.getElementById('customTextsJsonInput').value = JSON.stringify(customTextsArray);
+      document.getElementById('socialLinksJsonInput').value = JSON.stringify(socialLinksArray);
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      // الحل هنا: نجمع الشارات المحددة يدوياً من الـ DOM لضمان إرسال مصفوفة فارغة لو أُلغيت كلها
+      const checkedBadges = Array.from(document.querySelectorAll('.badge-checkbox:checked')).map(cb => cb.value.trim().toLowerCase());
+      data.displayedBadges = checkedBadges;
+
+      try {
+        const response = await fetch('/profile/customize/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+          showToast(result.message || 'تم حفظ التعديلات بنجاح!', 'check_circle');
+        } else {
+          showToast(result.message || 'حدث خطأ أثناء الحفظ', 'error');
+        }
+      } catch (err) {
+        showToast('فشل الاتصال بالخادم، يرجى المحاولة لاحقاً', 'wifi_off');
+      } finally {
+        btn.disabled = false;
+        btnTxt.innerText = 'حفظ التعديلات';
+        btnIcon.innerText = 'save';
+        btnIcon.classList.remove('animate-spin');
+      }
+    }
+  </script>
+</body>
+</html>

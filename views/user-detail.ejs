@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - <%= targetUser.globalName || targetUser.username %></title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Veloqra">
+  <meta property="og:title" content="Veloqra - <%= targetUser.globalName || targetUser.username %>">
+  <meta property="og:image" content="<%= targetUser.avatar || '/logo.png' %>">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/css/main.css">
+
+  <% 
+    const theme = targetUser.customTheme || {}; 
+    const hasTheme = Boolean(theme.enabled === true || theme.enabled === 'true'); 
+    const overlay = theme.entryOverlay || {};
+    const isOverlayActive = Boolean(overlay.enabled === true || overlay.enabled === 'true');
+  %>
+
+  <style>
+    @font-face {
+      font-family: 'CustomLocalFont';
+      src: url('/fonts/custom.woff2') format('woff2'),
+           url('/fonts/custom.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    <% if (hasTheme && theme.customCursorUrl) { %>
+      html, body, a, button, input, textarea, select {
+        cursor: url('<%= theme.customCursorUrl %>'), auto !important;
+      }
+    <% } %>
+
+    body {
+      font-family: '<%= (hasTheme && theme.fontFamily) ? theme.fontFamily : "IBM Plex Sans Arabic" %>', sans-serif;
+    }
+
+    /* ---------------- الشارات النظيفة (أيقونات سادة بدون خلفية) ---------------- */
+    .profile-badge-btn-clean {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      background: transparent !important;
+      border: none !important;
+      cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .profile-badge-btn-clean:hover { 
+      transform: scale(1.2); 
+    }
+
+    /* التول تيب الأسود الفوري للشارات */
+    .has-badge-tooltip {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .custom-tooltip-dark {
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a122c;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 4px 14px rgba(10, 18, 44, 0.25);
+      transition: none;
+    }
+
+    .custom-tooltip-dark::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 4px;
+      border-style: solid;
+      border-color: #0a122c transparent transparent transparent;
+    }
+
+    .has-badge-tooltip:hover .custom-tooltip-dark {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* ---------------- مودال تفاصيل الشارة ---------------- */
+    .badge-detail-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 44, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.25s ease, visibility 0.25s ease;
+    }
+    .badge-detail-modal-overlay.active {
+      opacity: 1 !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+    }
+    .badge-detail-card {
+      width: 100%;
+      max-width: 380px;
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 2rem 1.8rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .badge-detail-modal-overlay.active .badge-detail-card {
+      transform: scale(1);
+    }
+
+    /* ---------------- شاشة Click to enter ---------------- */
+    #clickToStartOverlay {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: <%= overlay.bgColor || 'rgba(10, 18, 44, 0.96)' %>;
+      color: <%= overlay.textColor || '#ffffff' %>;
+      font-family: '<%= overlay.fontFamily || "JetBrains Mono" %>', sans-serif;
+      cursor: pointer;
+      backdrop-filter: blur(14px);
+      transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s ease;
+    }
+    #clickToStartOverlay.hidden-start {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    /* ---------------- تنسيقات المظهر والناف بار المخصص ---------------- */
+    .page-clean-header { background: transparent !important; border: none !important; }
+    .page-clean-header nav { margin-bottom: 0 !important; padding-top: 1rem !important; }
+
+    <% if (hasTheme) { %>
+      body.custom-user-page {
+        <% if (theme.bgType === 'color') { %>
+          background-color: <%= theme.bgValue || '#0a122c' %> !important;
+        <% } else if (theme.bgType === 'gradient') { %>
+          background: <%= theme.bgValue %> !important;
+        <% } else if (theme.bgType === 'image') { %>
+          background: url('<%= theme.bgValue %>') no-repeat center center fixed !important;
+          background-size: cover !important;
+        <% } %>
+        color: <%= theme.textColor || '#ffffff' %> !important;
+      }
+
+      body.custom-user-page .page-clean-header .dheader-container,
+      body.custom-user-page .page-clean-header nav > div:first-child {
+        background-color: <%= theme.cardBg || 'rgba(255, 255, 255, 0.1)' %> !important;
+        backdrop-filter: blur(<%= theme.cardBlur || '16px' %>) !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25) !important;
+      }
+
+      /* ضبط ألوان نصوص وروابط الهيدر لتتبع ثيم المستخدم */
+      body.custom-user-page .page-clean-header nav a,
+      body.custom-user-page .page-clean-header nav span,
+      body.custom-user-page .page-clean-header .dheader-title {
+        color: <%= theme.textColor || '#ffffff' %> !important;
+      }
+
+      /* استثناء وحماية أزرار تسجيل الدخول وحاوية الاسم لتبقى واضحة وبارزة دائماً */
+      body.custom-user-page .page-clean-header nav a.bg-\[\#0a122c\],
+      body.custom-user-page .page-clean-header nav .hidden.md\:block a {
+        background-color: <%= theme.accentColor || '#ffd000' %> !important;
+        color: #0a122c !important;
+        border-color: transparent !important;
+      }
+
+      body.custom-user-page .page-clean-header nav a.bg-\[\#0a122c\]:hover,
+      body.custom-user-page .page-clean-header nav .hidden.md\:block a:hover {
+        opacity: 0.9;
+      }
+
+      /* صندوق اسم المستخدم في الهيدر */
+      body.custom-user-page .page-clean-header nav .bg-slate-50 {
+        background-color: rgba(255, 255, 255, 0.12) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+      }
+      body.custom-user-page .page-clean-header nav .bg-slate-50 span {
+        color: <%= theme.textColor || '#ffffff' %> !important;
+      }
+
+      .custom-profile-card {
+        background-color: <%= theme.cardBg || 'rgba(255, 255, 255, 0.05)' %> !important;
+        backdrop-filter: blur(<%= theme.cardBlur || '16px' %>) !important;
+        border: 1px solid rgba(255, 255, 255, 0.12) !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+        color: <%= theme.textColor || '#ffffff' %> !important;
+      }
+
+      .guns-video-bg {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100vh;
+        object-fit: cover;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      <%= theme.customCss || '' %>
+    <% } else { %>
+      .page-clean-header .dheader-container,
+      .page-clean-header nav > div:first-child {
+        background-color: rgba(255, 255, 255, 0.96) !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.06) !important;
+      }
+      .page-clean-header nav a, .page-clean-header nav span, .page-clean-header .dheader-title {
+        color: #0a122c !important;
+      }
+    <% } %>
+  </style>
+</head>
+<body class="loading-active <%= hasTheme ? 'custom-user-page' : 'bg-slate-50 text-slate-800' %> antialiased selection:bg-[#ffd000] selection:text-[#0a122c] min-h-screen flex flex-col justify-between relative">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white"><div class="simple-spinner"></div></div>
+
+  <!-- شاشة الدخول Click to enter -->
+  <% if (isOverlayActive) { %>
+    <div id="clickToStartOverlay" onclick="dismissEntryOverlay()">
+      <div class="text-center px-6 animate-pulse">
+        <span class="material-symbols-outlined text-4xl mb-2 block">touch_app</span>
+        <h2 class="text-lg sm:text-2xl font-extrabold tracking-widest uppercase">
+          <%= overlay.text || 'Click to enter' %>
+        </h2>
+      </div>
+    </div>
+  <% } %>
+
+  <!-- خلفية الفيديو -->
+  <% if (hasTheme && (theme.bgType === 'video' || theme.bgType === 'video_sound') && theme.bgValue) { %>
+    <video id="gunsBgVideo" autoplay loop playsinline class="guns-video-bg">
+      <source src="<%= theme.bgValue %>" type="video/mp4">
+    </video>
+
+    <% if (theme.bgType === 'video_sound') { %>
+      <button type="button" onclick="toggleGunsSound()" id="gunsSoundBtn" class="fixed bottom-6 left-6 z-50 flex items-center gap-2 px-3.5 py-2 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md text-white border border-white/20 text-xs font-bold transition-all shadow-xl cursor-pointer">
+        <span class="material-symbols-outlined text-base text-[#ffd000]" id="gunsSoundIcon">volume_off</span>
+      </button>
+    <% } %>
+  <% } %>
+
+  <header class="page-clean-header w-full relative z-30">
+    <%- include('partials/header') %>
+  </header>
+
+<% 
+  // إذا كان الحقل معرّفاً في الحساب (حتى لو مصفوفة فارغة) نعتمد اختيارات المستخدم
+  let displayedBadgesList = [];
+  if (Array.isArray(targetUser.displayedBadges)) {
+    const selectedSet = new Set(targetUser.displayedBadges.map(k => String(k).trim().toLowerCase()));
+    displayedBadgesList = userBadgesDetails.filter(b => selectedSet.has(String(b.key).trim().toLowerCase()));
+  } else {
+    displayedBadgesList = userBadgesDetails;
+  }
+%>
+
+  <main class="w-full relative z-10 flex-1 py-8 md:py-12">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 space-y-10">
+
+      <% if (fromUsers) { %>
+        <div>
+          <a href="/users" class="group inline-flex items-center gap-2 px-4 py-2 rounded-xl <%= hasTheme ? 'bg-white/10 hover:bg-white/20 border-white/20 text-white' : 'bg-white hover:bg-[#0a122c] border-slate-200 hover:border-[#0a122c] text-slate-700 hover:text-white' %> border text-xs font-bold transition-all shadow-sm">
+            <span class="material-symbols-outlined text-base transition-transform duration-300 group-hover:translate-x-1">east</span>
+            <span>العودة</span>
+          </a>
+        </div>
+      <% } %>
+
+      <section id="section-main">
+        <% if (!hasTheme) { %>
+          <!-- التصميم القياسي للمستخدمين بدون ثيم -->
+          <div class="bg-white border border-slate-200 rounded-[2rem] shadow-sm overflow-hidden">
+            <div class="h-44 bg-gradient-to-r from-[#0a122c] via-[#1d3557] to-[#4287f5] relative">
+              <div class="absolute -bottom-10 right-8 p-1 bg-white rounded-full shadow-md">
+                <img src="<%= targetUser.avatar || '/logo.png' %>" class="w-24 h-24 rounded-full object-cover bg-white" onerror="this.src='/logo.png'">
+              </div>
+            </div>
+
+            <div class="pt-14 pb-8 px-6 sm:px-10">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+                <div>
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                      <%= targetUser.globalName || targetUser.username %>
+                    </h1>
+
+                    <!-- الشارات النقية سادة بدون خلفية وبدون إطار -->
+                    <% if (displayedBadgesList && displayedBadgesList.length > 0) { %>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <% displayedBadgesList.forEach(b => { %>
+                          <div class="has-badge-tooltip">
+                            <button type="button" class="profile-badge-btn-clean" onclick='openBadgeModal(<%- JSON.stringify(b).replace(/'/g, "&apos;") %>)'>
+                              <span class="material-symbols-outlined text-xl" style="color: <%= b.color || '#3b82f6' %>;"><%= b.icon %></span>
+                            </button>
+                            <div class="custom-tooltip-dark"><%= b.name %></div>
+                          </div>
+                        <% }) %>
+                      </div>
+                    <% } %>
+                  </div>
+
+                  <!-- اليوزرنيم فقط بدون الآيدي -->
+                  <p class="text-xs sm:text-sm font-mono text-slate-400 mt-1" dir="ltr">
+                    @<%= targetUser.username %>
+                  </p>
+
+                  <% if (targetUser.customTexts && targetUser.customTexts.length > 0) { %>
+                    <div class="flex items-center gap-2 flex-wrap mt-4 w-full">
+                      <% targetUser.customTexts.forEach(item => { %>
+                        <% if (item.type === 'image') { %>
+                          <% if (item.newLine) { %>
+                            <div class="w-full my-1 flex justify-start">
+                              <% if (item.linkUrl) { %><a href="<%= item.linkUrl %>" target="_blank" class="inline-block hover:opacity-80 transition-opacity"><% } %>
+                                <img src="<%= item.imageUrl %>" loading="lazy" class="max-h-24 sm:max-h-32 w-auto rounded-xl object-contain shadow-xs border border-slate-200" alt="badge-image">
+                              <% if (item.linkUrl) { %></a><% } %>
+                            </div>
+                          <% } else { %>
+                            <% if (item.linkUrl) { %><a href="<%= item.linkUrl %>" target="_blank" class="inline-block hover:opacity-80 transition-opacity"><% } %>
+                              <img src="<%= item.imageUrl %>" loading="lazy" class="h-8 sm:h-9 w-auto rounded-lg object-contain shadow-xs inline-block border border-slate-200" alt="badge-image">
+                            <% if (item.linkUrl) { %></a><% } %>
+                          <% } %>
+                        <% } else { %>
+                          <% if (item.newLine) { %>
+                            <div class="w-full my-0.5">
+                              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold">
+                                <% if (item.icon) { %><span class="material-symbols-outlined text-sm text-blue-600"><%= item.icon %></span><% } %>
+                                <span><%= item.text %></span>
+                              </span>
+                            </div>
+                          <% } else { %>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold">
+                              <% if (item.icon) { %><span class="material-symbols-outlined text-sm text-blue-600"><%= item.icon %></span><% } %>
+                              <span><%= item.text %></span>
+                            </span>
+                          <% } %>
+                        <% } %>
+                      <% }) %>
+                    </div>
+                  <% } %>
+                </div>
+              </div>
+
+              <div class="pt-6">
+                <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap"><%= userAbout || 'لا توجد نبذة تعريفية مسجلة.' %></p>
+              </div>
+            </div>
+          </div>
+        <% } else { %>
+          <!-- التصميم المخصص (Custom Theme) -->
+          <div class="custom-profile-card rounded-[2.5rem] p-8 sm:p-12 text-center max-w-xl mx-auto flex flex-col items-center gap-6 relative overflow-hidden">
+            <div class="relative">
+              <img src="<%= targetUser.avatar || '/logo.png' %>" class="w-28 h-28 rounded-full object-cover border-4 border-white/20 shadow-2xl" onerror="this.src='/logo.png'">
+              <% if (theme.audioUrl) { %>
+                <button type="button" onclick="toggleAudio()" id="audioBtn" class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur-md flex items-center justify-center text-white border border-white/30 cursor-pointer transition-all">
+                  <span class="material-symbols-outlined text-base" id="audioIcon">volume_up</span>
+                </button>
+                <audio id="userAudio" src="<%= theme.audioUrl %>" loop></audio>
+              <% } %>
+            </div>
+
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-1">
+                <%= targetUser.globalName || targetUser.username %>
+              </h1>
+              
+              <!-- اليوزرنيم فقط بدون الآيدي -->
+              <div class="font-mono text-xs opacity-70" dir="ltr">
+                @<%= targetUser.username %>
+              </div>
+
+              <!-- شارات نقية سادة بدون أي خلفيات أو إطارات -->
+              <% if (displayedBadgesList && displayedBadgesList.length > 0) { %>
+                <div class="flex items-center justify-center gap-2 mt-4 flex-wrap">
+                  <% displayedBadgesList.forEach(b => { %>
+                    <div class="has-badge-tooltip">
+                      <button type="button" class="profile-badge-btn-clean" onclick='openBadgeModal(<%- JSON.stringify(b).replace(/'/g, "&apos;") %>)'>
+                        <span class="material-symbols-outlined text-xl sm:text-2xl" style="color: <%= b.color || '#ffd000' %>;"><%= b.icon %></span>
+                      </button>
+                      <div class="custom-tooltip-dark"><%= b.name %></div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } %>
+
+              <% if (targetUser.customTexts && targetUser.customTexts.length > 0) { %>
+                <div class="flex items-center justify-center gap-2 flex-wrap mt-4 w-full">
+                  <% targetUser.customTexts.forEach(item => { %>
+                    <% if (item.type === 'image') { %>
+                      <% if (item.newLine) { %>
+                        <div class="w-full my-1.5 flex justify-center">
+                          <% if (item.linkUrl) { %><a href="<%= item.linkUrl %>" target="_blank" class="inline-block hover:opacity-80 transition-opacity"><% } %>
+                            <img src="<%= item.imageUrl %>" loading="lazy" class="max-h-24 sm:max-h-32 w-auto rounded-xl object-contain" alt="badge-image">
+                          <% if (item.linkUrl) { %></a><% } %>
+                        </div>
+                      <% } else { %>
+                        <% if (item.linkUrl) { %><a href="<%= item.linkUrl %>" target="_blank" class="inline-block hover:opacity-80 transition-opacity"><% } %>
+                          <img src="<%= item.imageUrl %>" loading="lazy" class="h-8 sm:h-9 w-auto rounded-lg object-contain shadow-xs" alt="badge-image">
+                        <% if (item.linkUrl) { %></a><% } %>
+                      <% } %>
+                    <% } else { %>
+                      <% if (item.newLine) { %>
+                        <div class="w-full flex justify-center my-0.5">
+                          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-white/10 border border-white/15 text-xs font-bold">
+                            <% if (item.icon) { %><span class="material-symbols-outlined text-sm" style="color: <%= theme.accentColor || '#ffd000' %>"><%= item.icon %></span><% } %>
+                            <span><%= item.text %></span>
+                          </span>
+                        </div>
+                      <% } else { %>
+                        <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-xl bg-white/10 border border-white/15 text-xs font-bold">
+                          <% if (item.icon) { %><span class="material-symbols-outlined text-sm" style="color: <%= theme.accentColor || '#ffd000' %>"><%= item.icon %></span><% } %>
+                          <span><%= item.text %></span>
+                        </span>
+                      <% } %>
+                    <% } %>
+                  <% }) %>
+                </div>
+              <% } %>
+            </div>
+
+            <% if (userAbout) { %>
+              <div class="p-4 rounded-2xl bg-white/5 border border-white/10 text-xs sm:text-sm leading-relaxed max-w-md w-full">
+                <%= userAbout %>
+              </div>
+            <% } %>
+
+            <% if (targetUser.socialLinks && targetUser.socialLinks.length > 0) { %>
+              <div class="flex flex-col gap-2.5 w-full max-w-md">
+                <% targetUser.socialLinks.forEach(link => { %>
+                  <a href="<%= link.url %>" target="_blank" rel="noopener noreferrer" class="group flex items-center justify-between p-3.5 rounded-xl bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/25 transition-all text-xs font-bold">
+                    <div class="flex items-center gap-2.5">
+                      <span class="material-symbols-outlined text-lg opacity-70 group-hover:opacity-100"><%= link.platform || 'link' %></span>
+                      <span><%= link.title %></span>
+                    </div>
+                    <span class="material-symbols-outlined text-sm opacity-50 group-hover:opacity-100 transition-transform group-hover:-translate-x-1">west</span>
+                  </a>
+                <% }) %>
+              </div>
+            <% } %>
+          </div>
+        <% } %>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- مودال الشارة بالأيقونة السادة بدون أي إطار أو خلفيات -->
+  <div class="badge-detail-modal-overlay" id="badgeModal" onclick="if(event.target===this) closeBadgeModal()">
+    <div class="badge-detail-card text-slate-800">
+      <div class="flex items-center justify-center mb-3">
+        <span class="material-symbols-outlined text-5xl" id="badgeLargeIcon"></span>
+      </div>
+      <h3 class="text-lg font-black mb-1 tracking-tight" id="badgeDetailTitle"></h3>
+      <p class="text-slate-500 text-xs sm:text-sm leading-relaxed mb-6" id="badgeDetailDesc"></p>
+      <button type="button" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs cursor-pointer border border-slate-200 transition-colors" onclick="closeBadgeModal()">إغلاق</button>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto relative z-10">
+    <%- include('partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    function dismissEntryOverlay() {
+      const el = document.getElementById('clickToStartOverlay');
+      if (el) el.classList.add('hidden-start');
+
+      const gunsVideo = document.getElementById('gunsBgVideo');
+      if (gunsVideo) {
+        gunsVideo.muted = false;
+        gunsVideo.play().catch(() => {});
+        const gunsIcon = document.getElementById('gunsSoundIcon');
+        if (gunsIcon) gunsIcon.textContent = 'volume_up';
+      }
+    }
+
+    function toggleAudio() {
+      const audio = document.getElementById('userAudio');
+      const icon = document.getElementById('audioIcon');
+      if (!audio) return;
+      if (audio.paused) {
+        audio.play().then(() => { icon.textContent = 'pause'; }).catch(() => {});
+      } else {
+        audio.pause();
+        icon.textContent = 'volume_up';
+      }
+    }
+
+    const badgeModal = document.getElementById('badgeModal');
+    function openBadgeModal(badge) {
+      if (!badgeModal) return;
+      const badgeColor = badge.color || '#3b82f6';
+
+      const largeIcon = document.getElementById('badgeLargeIcon');
+      largeIcon.textContent = badge.icon || 'military_tech';
+      largeIcon.style.color = badgeColor;
+
+      const titleEl = document.getElementById('badgeDetailTitle');
+      titleEl.textContent = badge.name;
+
+      document.getElementById('badgeDetailDesc').textContent = badge.description || 'لا يوجد وصف مسجل لهذه الشارة.';
+      badgeModal.classList.add('active');
+    }
+
+    function closeBadgeModal() {
+      if (badgeModal) badgeModal.classList.remove('active');
+    }
+
+    const gunsVideo = document.getElementById('gunsBgVideo');
+    function toggleGunsSound() {
+      if (!gunsVideo) return;
+      gunsVideo.muted = !gunsVideo.muted;
+      const gunsIcon = document.getElementById('gunsSoundIcon');
+      if (gunsIcon) gunsIcon.textContent = gunsVideo.muted ? 'volume_off' : 'volume_up';
+    }
+  </script>
+</body>
+</html>

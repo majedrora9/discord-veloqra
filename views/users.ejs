@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth overflow-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - مجتمع المستخدمين</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="shortcut icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Veloqra">
+  <meta property="og:title" content="Veloqra - أعضاء المجتمع">
+  <meta property="og:description" content="تعرف على مستخدمين منصة فيلوكرا المسجلين لدى المنصة">
+  <meta property="og:image" content="/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffd000'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .page-clean-header .dheader-container {
+      background-color: rgba(255, 255, 255, 0.96) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.06) !important;
+    }
+
+    .page-clean-header .dheader-title,
+    .page-clean-header .dheader-links a {
+      color: #0a122c !important;
+    }
+
+    .page-clean-header .dheader-links a:hover {
+      color: #4287f5 !important;
+    }
+
+    .page-clean-header .dheader-user-btn {
+      background-color: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      color: #0a122c !important;
+    }
+    .page-clean-header .dheader-user-btn:hover {
+      background-color: #f1f5f9 !important;
+    }
+
+    .page-clean-header #burgerBtn {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .page-clean-header #burgerBtn span {
+      color: #0a122c !important;
+    }
+
+    .community-user-card {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 1rem 1.15rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      user-select: none;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+
+    .community-user-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px -6px rgba(10, 18, 44, 0.08);
+      background: #f8fafc;
+    }
+  </style>
+</head>
+<body class="loading-active bg-slate-50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] min-h-screen flex flex-col justify-between">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+    <%- include('../partials/dheader') %>
+  </header>
+
+  <main class="w-full relative flex-1 py-10 md:py-16">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-300">
+        <div>
+          <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 border border-blue-100 px-3 py-1 rounded-full">
+            مجتمع فيلوكرا
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">
+            أعضاء المنصة
+          </h1>
+          <p class="text-slate-500 text-xs sm:text-sm mt-1.5">
+            استكشف المستخدمين المسجلين لدى منصة فيلوكرا
+          </p>
+        </div>
+
+        <div class="w-full md:w-72">
+          <div class="relative">
+            <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
+            <input 
+              type="text" 
+              id="userSearchInput" 
+              onkeyup="filterUsers()" 
+              placeholder="ابحث بالاسم أو الأيدي..."
+              class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#0a122c] focus:bg-white transition-all shadow-sm"
+            >
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" id="usersGrid">
+        <% if (users && users.length > 0) { %>
+          <% users.forEach((u) => { %>
+            <a 
+              href="/users/<%= u.discordId %>?ref=users"
+              class="community-user-card" 
+              data-search="<%= (u.globalName || '').toLowerCase() %> <%= (u.username || '').toLowerCase() %> <%= u.discordId %>"
+            >
+              <div class="relative shrink-0">
+                <img src="<%= u.avatar || '/logo.png' %>" alt="<%= u.username %>" class="w-12 h-12 rounded-full border border-slate-200 object-cover bg-slate-100" onerror="this.src='/logo.png'">
+              </div>
+
+              <div class="min-w-0 flex-1 text-right">
+                <h3 class="font-bold text-slate-900 text-sm truncate"><%= u.globalName || u.username %></h3>
+                <p class="text-slate-400 text-[11px] font-mono truncate text-right mt-0.5">&#x200E;@<%= u.username %></p>
+              </div>
+            </a>
+          <% }) %>
+        <% } else { %>
+          <div class="col-span-full text-center py-16">
+            <span class="material-symbols-outlined text-4xl text-slate-300 mb-2">person_off</span>
+            <p class="text-slate-500 text-sm font-medium">لا يوجد أي عضو مسجل حالياً</p>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    function filterUsers() {
+      const q = document.getElementById('userSearchInput').value.toLowerCase().trim();
+      const cards = document.querySelectorAll('.community-user-card');
+      cards.forEach(card => {
+        const text = card.getAttribute('data-search') || '';
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>

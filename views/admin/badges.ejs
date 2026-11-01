@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - إدارة الشارات</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffd000'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 18, 44, 0.65);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      padding: 1.5rem;
+    }
+    .admin-modal.show { display: flex !important; }
+    .modal-card {
+      width: 100%;
+      border-radius: 24px;
+      padding: 2rem;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      box-shadow: 0 25px 60px rgba(10, 18, 44, 0.25);
+    }
+    .form-input {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      color: #0a122c;
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      outline: none;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .form-input:focus {
+      border-color: #0a122c;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(10, 18, 44, 0.08);
+    }
+    .custom-inner-scroll::-webkit-scrollbar { width: 5px; }
+    .custom-inner-scroll::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 9999px; }
+    .custom-inner-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+
+    .badge-card-item {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .badge-card-item:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px -8px rgba(10, 18, 44, 0.06);
+    }
+
+    /* نظام الـ Tooltip الفوري */
+    .has-badge-tooltip {
+      position: relative;
+    }
+    .badge-tooltip-box {
+      position: absolute;
+      bottom: calc(100% + 7px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0a122c;
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 4px 9px;
+      border-radius: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 4px 14px rgba(10, 18, 44, 0.25);
+    }
+    .badge-tooltip-box::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 4px;
+      border-style: solid;
+      border-color: #0a122c transparent transparent transparent;
+    }
+    .has-badge-tooltip:hover .badge-tooltip-box {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #toastNotification {
+      position: fixed;
+      bottom: 2rem;
+      left: 2rem;
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.25rem;
+      border-radius: 1rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      box-shadow: 0 20px 40px -8px rgba(10, 18, 44, 0.2);
+      transform: translateY(150%);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #toastNotification.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="loading-active bg-white text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <div id="toastNotification" class="bg-[#0a122c] text-white border border-slate-700">
+    <span class="material-symbols-outlined text-xl text-[#ffd000]" id="toastIcon">check_circle</span>
+    <span id="toastMessage">تم تنفيذ العملية بنجاح</span>
+  </div>
+
+  <%- include('partials/header', { isSubPage: true, pageTitle: 'إدارة الشارات' }) %>
+
+  <main class="w-full relative flex-1 bg-white py-10 md:py-14">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
+
+      <div class="text-center max-w-2xl mx-auto mb-6">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
+          إدارة الشارات
+        </h1>
+        <p class="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
+          إنشاء وتعديل شارات المنصة ومنحها وسحبها من حسابات الأعضاء
+        </p>
+      </div>
+
+      <div class="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <span class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold shadow-xs">
+            عدد الشارات: <span class="font-mono text-blue-600 font-extrabold"><%= (badges || []).length %></span>
+          </span>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <button type="button" onclick="document.getElementById('assignBadgeModal').classList.add('show')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-800 font-bold text-xs flex items-center justify-center gap-1.5 transition-all border border-slate-200 cursor-pointer shadow-xs">
+            <span class="material-symbols-outlined text-base text-blue-600">person_add</span>
+            <span>منح شارة لعضو</span>
+          </button>
+          <button type="button" onclick="document.getElementById('createBadgeModal').classList.add('show')" class="flex-1 sm:flex-initial px-4 py-2.5 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs flex items-center justify-center gap-1.5 transition-all border border-[#0a122c] hover:border-[#ffd000] shadow-xs cursor-pointer">
+            <span class="material-symbols-outlined text-base">add</span>
+            <span>إنشاء شارة جديدة</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- قائمة الشارات مع زر التعديل والحذف -->
+      <div class="bento-card p-6 sm:p-8 bg-white border border-slate-200 rounded-3xl space-y-5">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-xl">verified</span>
+            </div>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">شارات المنصة</h3>
+            </div>
+          </div>
+        </div>
+
+        <% if (badges && badges.length > 0) { %>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            <% badges.forEach(b => { %>
+              <% const bColor = b.color || '#3b82f6'; %>
+              <div class="badge-card-item p-3.5 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border"
+                       style="color: <%= bColor %>; background-color: <%= bColor %>14; border-color: <%= bColor %>30;">
+                    <span class="material-symbols-outlined text-xl"><%= b.icon %></span>
+                  </div>
+                  <div class="min-w-0">
+                    <h4 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate"><%= b.name %></h4>
+                    <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr"><%= b.key %></span>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <!-- زر تعديل الشارة -->
+                  <button type="button" 
+                          onclick="promptEditBadge('<%= b._id %>', '<%= b.key %>', '<%= (b.name || '').replace(/'/g, "\\'") %>', '<%= b.icon %>', '<%= bColor %>', '<%= (b.description || '').replace(/'/g, "\\'") %>')" 
+                          class="p-1.5 rounded-lg bg-blue-50 hover:bg-blue-600 text-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all cursor-pointer flex items-center justify-center" 
+                          title="تعديل الشارة">
+                    <span class="material-symbols-outlined text-base">edit</span>
+                  </button>
+
+                  <!-- زر حذف الشارة -->
+                  <button type="button" 
+                          onclick="promptDeleteBadge('<%= b._id %>', '<%= b.key %>', '<%= (b.name || '').replace(/'/g, "\\'") %>')" 
+                          class="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 hover:border-rose-600 transition-all cursor-pointer flex items-center justify-center" 
+                          title="حذف الشارة نهائياً">
+                    <span class="material-symbols-outlined text-base">delete</span>
+                  </button>
+                </div>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="text-center py-12">
+            <div class="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 text-slate-400 flex items-center justify-center mx-auto mb-2">
+              <span class="material-symbols-outlined text-2xl">workspace_premium</span>
+            </div>
+            <p class="text-xs text-slate-500 font-bold">لا يوجد شارات حالياً</p>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- سجل الشارات الممنوحة -->
+      <div class="bento-card p-6 sm:p-8 bg-white border border-slate-200 rounded-3xl space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-4 pb-4 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center">
+              <span class="material-symbols-outlined text-xl">stars</span>
+            </div>
+            <div>
+              <h3 class="text-base font-extrabold text-slate-900">سجل الشارات الممنوحة</h3>
+            </div>
+          </div>
+
+          <div class="relative w-full sm:w-64">
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-base pointer-events-none">search</span>
+            <input 
+              type="text" 
+              id="userBadgesSearchInput" 
+              placeholder="ابحث باسم العضو أو الآيدي..." 
+              class="w-full pl-3 pr-9 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-[#0a122c] transition-colors"
+            >
+          </div>
+        </div>
+
+        <div id="userBadgesList" class="space-y-3 max-h-[460px] overflow-y-auto pr-1 pl-1 custom-inner-scroll">
+          <% 
+            const bColorMap = {};
+            (badges || []).forEach(item => {
+              bColorMap[item.key] = { color: item.color || '#3b82f6', name: item.name, icon: item.icon };
+            });
+
+            const usersWithBadges = (discordUsers || []).filter(u => u.badges && u.badges.length > 0);
+            if (usersWithBadges.length > 0) { 
+              usersWithBadges.forEach(u => {
+          %>
+            <div class="badge-user-row p-4 rounded-2xl bg-slate-50/70 border border-slate-200/80 flex items-center justify-between gap-4 flex-wrap"
+                 data-search="<%= ((u.globalName || u.username) + ' ' + u.discordId).toLowerCase() %>">
+              <div class="flex items-center gap-3 min-w-0">
+                <img src="<%= u.avatar || '/logo.png' %>" class="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-white shrink-0" onerror="this.src='/logo.png'">
+                <div class="min-w-0">
+                  <h5 class="text-xs sm:text-sm font-extrabold text-slate-900 truncate"><%= u.globalName || u.username %></h5>
+                  <span class="text-[11px] text-slate-400 font-mono block truncate" dir="ltr">ID: <%= u.discordId %></span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <% u.badges.forEach(bKey => { %>
+                  <% 
+                    const info = bColorMap[bKey] || { color: '#3b82f6', name: bKey, icon: 'military_tech' };
+                    const c = info.color;
+                  %>
+                  <span 
+                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold border transition-colors"
+                    style="color: <%= c %>; background-color: <%= c %>12; border-color: <%= c %>30;"
+                  >
+                    <span class="material-symbols-outlined text-sm shrink-0" style="color: <%= c %>;"><%= info.icon %></span>
+                    <span><%= info.name %></span>
+                    <button type="button" onclick="promptRevokeBadge('<%= u.discordId %>', '<%= bKey %>', '<%= info.name %>', '<%= (u.globalName || u.username).replace(/'/g, "\\'") %>')" class="hover:opacity-100 opacity-60 border-none bg-transparent cursor-pointer p-0 flex items-center ml-0.5" style="color: <%= c %>;" title="سحب الشارة">
+                      <span class="material-symbols-outlined text-xs">close</span>
+                    </button>
+                  </span>
+                <% }) %>
+              </div>
+            </div>
+          <% 
+              });
+            } else { 
+          %>
+            <div class="text-center py-12 text-xs text-slate-400 font-medium">لم يتم إسناد شارات مخصصة لأي عضو بعد.</div>
+          <% } %>
+        </div>
+
+        <div id="noBadgeSearchResults" class="hidden py-12 text-center text-xs text-slate-400 font-bold">
+          لا يوجد أعضاء يطابقون بحثك.
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- 1. مودال إنشاء شارة جديدة مع النجمة الحمراء -->
+  <div class="admin-modal" id="createBadgeModal" onclick="if(event.target===this) this.classList.remove('show')">
+    <div class="modal-card max-w-md">
+      <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 m-0">إنشاء شارة جديدة</h3>
+        <button type="button" onclick="document.getElementById('createBadgeModal').classList.remove('show')" class="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form action="/admin/badges/create" method="POST" class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">المعرّف البرمجي (Key) <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="key" required placeholder="vip_member أو developer" class="form-input font-mono" dir="ltr">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">اسم الشارة الظاهر <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="name" required placeholder="عضو مميز VIP" class="form-input">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">رمز الأيقونة (Material Symbol) <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="icon" required placeholder="diamond أو verified أو code" class="form-input font-mono" dir="ltr">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">لون الشارة <span class="text-rose-500 font-black">*</span></label>
+          <div class="flex items-center gap-2">
+            <input type="color" name="color" value="#3b82f6" id="badgeColorPicker" oninput="document.getElementById('badgeColorHex').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer">
+            <input type="text" id="badgeColorHex" name="colorHex" value="#3b82f6" oninput="document.getElementById('badgeColorPicker').value = this.value" class="form-input font-mono text-xs uppercase" dir="ltr">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">وصف وتفاصيل الشارة</label>
+          <textarea name="description" rows="2" placeholder="تمنح هذه الشارة للأعضاء المساهمين في دعم وتطوير المنصة..." class="form-input text-xs"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-3">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs border border-[#0a122c] hover:border-[#ffd000] transition-all cursor-pointer shadow-xs">انشاء الشارة</button>
+          <button type="button" onclick="document.getElementById('createBadgeModal').classList.remove('show')" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. مودال تعديل شارة موجودة -->
+  <div class="admin-modal" id="editBadgeModal" onclick="if(event.target===this) closeEditBadgeModal()">
+    <div class="modal-card max-w-md">
+      <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 m-0">تعديل الشارة</h3>
+        <button type="button" onclick="closeEditBadgeModal()" class="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form action="/admin/badges/update" method="POST" class="space-y-3.5">
+        <input type="hidden" name="badgeId" id="editBadgeId">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">المعرّف البرمجي (Key)</label>
+          <input type="text" id="editBadgeKey" disabled class="form-input font-mono opacity-60 cursor-not-allowed bg-slate-100" dir="ltr">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">اسم الشارة <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="name" id="editBadgeName" required class="form-input">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">رمز الأيقونة (Material Symbol) <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="icon" id="editBadgeIcon" required class="form-input font-mono" dir="ltr">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">لون الشارة <span class="text-rose-500 font-black">*</span></label>
+          <div class="flex items-center gap-2">
+            <input type="color" name="color" id="editBadgeColorPicker" oninput="document.getElementById('editBadgeColorHex').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer">
+            <input type="text" id="editBadgeColorHex" name="colorHex" oninput="document.getElementById('editBadgeColorPicker').value = this.value" class="form-input font-mono text-xs uppercase" dir="ltr">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">الوصف</label>
+          <textarea name="description" id="editBadgeDesc" rows="2" class="form-input text-xs"></textarea>
+        </div>
+
+        <div class="flex items-center gap-2 pt-3">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs border border-blue-600 transition-all cursor-pointer shadow-xs">حفظ التعديلات</button>
+          <button type="button" onclick="closeEditBadgeModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. مودال منح الشارة مع Select Menu مخصص قابل للبحث مع التول تيب -->
+  <div class="admin-modal" id="assignBadgeModal" onclick="if(event.target===this) this.classList.remove('show')">
+    <div class="modal-card max-w-md">
+      <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 m-0">منح شارة لعضو</h3>
+        <button type="button" onclick="document.getElementById('assignBadgeModal').classList.remove('show')" class="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <form action="/admin/badges/assign" method="POST" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 mb-1">معرّف ديسكورد (Discord ID) <span class="text-rose-500 font-black">*</span></label>
+          <input type="text" name="discordId" required placeholder="691044838459834430" class="form-input font-mono" dir="ltr">
+        </div>
+
+        <!-- حقل القائمة المخصصة للشارات -->
+        <div class="relative">
+          <label class="block text-xs font-bold text-slate-700 mb-1">اختر الشارة <span class="text-rose-500 font-black">*</span></label>
+          
+          <input type="hidden" name="badgeKey" id="selectedBadgeKeyInput" required>
+
+          <!-- زر فتح وإغلاق القائمة المنسدلة -->
+          <div id="badgeDropdownTrigger" onclick="toggleBadgeDropdown()" class="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 hover:border-slate-300 cursor-pointer transition-all">
+            <div class="flex items-center gap-2.5 min-w-0" id="selectedBadgeDisplay">
+              <span class="material-symbols-outlined text-slate-400 text-xl">verified</span>
+              <span class="text-xs font-bold text-slate-400">اضغط لاختيار شارة من القائمة...</span>
+            </div>
+            <span class="material-symbols-outlined text-slate-400 text-lg transition-transform duration-200" id="badgeDropdownArrow">expand_more</span>
+          </div>
+
+          <!-- الصندوق المنسدل التفاعلي -->
+          <div id="badgeDropdownMenu" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 p-2.5">
+            <!-- شريط بحث سريع عن الشارة -->
+            <div class="relative mb-2">
+              <span class="material-symbols-outlined text-slate-400 text-sm absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+              <input type="text" id="badgeSearchInModal" placeholder="ابحث باسم الشارة..." class="w-full pr-8 pl-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs focus:bg-white focus:outline-none focus:border-[#0a122c]">
+            </div>
+
+            <!-- قائمة الخيارات المتاحة مع الأيقونات والتول تيب -->
+            <div class="max-h-48 overflow-y-auto space-y-1 custom-inner-scroll" id="badgeOptionsList">
+              <% (badges || []).forEach(b => { %>
+                <% const clr = b.color || '#3b82f6'; %>
+                <div onclick="selectBadgeOption('<%= b.key %>', '<%= (b.name || '').replace(/'/g, "\\'") %>', '<%= b.icon %>', '<%= clr %>')"
+                     class="badge-option-item has-badge-tooltip flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 cursor-pointer transition-colors"
+                     data-name="<%= (b.name || '').toLowerCase() %>" data-key="<%= (b.key || '').toLowerCase() %>">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="material-symbols-outlined text-lg shrink-0" style="color: <%= clr %>;"><%= b.icon %></span>
+                    <span class="text-xs font-bold text-slate-800 truncate"><%= b.name %></span>
+                  </div>
+                  <span class="text-[10px] font-mono text-slate-400 shrink-0" dir="ltr"><%= b.key %></span>
+                  <div class="badge-tooltip-box"><%= b.name %></div>
+                </div>
+              <% }) %>
+            </div>
+
+            <div id="noBadgeSearchFound" class="hidden text-center py-4 text-xs text-slate-400 font-bold">لا توجد شارة مطابقة</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-3">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-[#0a122c] hover:bg-[#ffd000] text-white hover:text-[#0a122c] font-bold text-xs border border-[#0a122c] hover:border-[#ffd000] transition-all cursor-pointer shadow-xs">منح الشارة الآن</button>
+          <button type="button" onclick="document.getElementById('assignBadgeModal').classList.remove('show')" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer">إلغاء</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال تأكيد الحذف -->
+  <div class="admin-modal" id="confirmDeleteBadgeModal" onclick="if(event.target===this) closeDeleteBadgeModal()">
+    <div class="modal-card text-center" style="max-width: 440px;">
+      <div class="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-3xl">warning</span>
+      </div>
+
+      <h3 class="text-lg font-extrabold text-slate-900 mb-1">تأكيد حذف الشارة</h3>
+      <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed" id="confirmBadgeDeleteDesc">هل أنت متأكد من حذف هذه الشارة وسحبها من كافة الأعضاء؟</p>
+
+      <form id="deleteBadgeForm" action="/admin/badges/delete" method="POST" class="m-0">
+        <input type="hidden" name="badgeId" id="confirmBadgeId">
+        <input type="hidden" name="badgeKey" id="confirmBadgeKey">
+        <div class="flex items-center gap-3">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors cursor-pointer border-none shadow-xs">
+            نعم، احذف نهائياً
+          </button>
+          <button type="button" onclick="closeDeleteBadgeModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
+            إلغاء الأمر
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال تأكيد السحب -->
+  <div class="admin-modal" id="confirmRevokeBadgeModal" onclick="if(event.target===this) closeRevokeBadgeModal()">
+    <div class="modal-card text-center" style="max-width: 440px;">
+      <div class="w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 text-amber-600 flex items-center justify-center mx-auto mb-4">
+        <span class="material-symbols-outlined text-3xl">military_tech</span>
+      </div>
+
+      <h3 class="text-lg font-extrabold text-slate-900 mb-1">سحب الشارة من العضو</h3>
+      <p class="text-xs sm:text-sm text-slate-500 mb-6 leading-relaxed" id="confirmRevokeBadgeDesc">هل أنت متأكد من سحب هذه الشارة؟</p>
+
+      <form id="revokeBadgeForm" action="/admin/badges/revoke" method="POST" class="m-0">
+        <input type="hidden" name="discordId" id="confirmRevokeDiscordId">
+        <input type="hidden" name="badgeKey" id="confirmRevokeBadgeKey">
+        <div class="flex items-center gap-3">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors cursor-pointer border-none shadow-xs">
+            نعم، اسحب الشارة
+          </button>
+          <button type="button" onclick="closeRevokeBadgeModal()" class="py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
+            إلغاء الأمر
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    // بحث سجل الشارات الممنوحة
+    const userSearchInput = document.getElementById('userBadgesSearchInput');
+    const badgeRows = document.querySelectorAll('.badge-user-row');
+    const noResults = document.getElementById('noBadgeSearchResults');
+
+    if (userSearchInput) {
+      userSearchInput.addEventListener('input', () => {
+        const q = (userSearchInput.value || '').trim().toLowerCase();
+        let visible = 0;
+
+        badgeRows.forEach(row => {
+          const text = row.getAttribute('data-search') || '';
+          if (!q || text.includes(q)) {
+            row.style.display = '';
+            visible++;
+          } else {
+            row.style.display = 'none';
+          }
+        });
+
+        if (noResults) {
+          noResults.classList.toggle('hidden', visible > 0);
+        }
+      });
+    }
+
+    // إشعارات Toast
+    const toast = document.getElementById('toastNotification');
+    const toastMsg = document.getElementById('toastMessage');
+    const toastIcon = document.getElementById('toastIcon');
+
+    function showToast(message, icon = 'check_circle') {
+      if (!toast) return;
+      toastMsg.innerText = message;
+      toastIcon.innerText = icon;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('msg') === 'deleted') {
+      showToast('تم حذف الشارة بنجاح', 'delete');
+    } else if (urlParams.get('msg') === 'revoked') {
+      showToast('تم سحب الشارة من العضو بنجاح', 'remove_done');
+    } else if (urlParams.get('msg') === 'assigned') {
+      showToast('تم منح الشارة للعضو بنجاح', 'verified');
+    } else if (urlParams.get('msg') === 'created') {
+      showToast('تم إنشاء الشارة الجديدة بنجاح', 'add_task');
+    } else if (urlParams.get('msg') === 'updated') {
+      showToast('تم تحديث بيانات الشارة بنجاح', 'edit_square');
+    }
+
+    // دوال التعديل
+    const editModal = document.getElementById('editBadgeModal');
+    function promptEditBadge(id, key, name, icon, color, description) {
+      document.getElementById('editBadgeId').value = id;
+      document.getElementById('editBadgeKey').value = key;
+      document.getElementById('editBadgeName').value = name;
+      document.getElementById('editBadgeIcon').value = icon;
+      document.getElementById('editBadgeColorPicker').value = color;
+      document.getElementById('editBadgeColorHex').value = color;
+      document.getElementById('editBadgeDesc').value = description;
+      editModal.classList.add('show');
+    }
+
+    function closeEditBadgeModal() {
+      if (editModal) editModal.classList.remove('show');
+    }
+
+    // دوال الحذف
+    const deleteBadgeModal = document.getElementById('confirmDeleteBadgeModal');
+    const confirmBadgeId = document.getElementById('confirmBadgeId');
+    const confirmBadgeKey = document.getElementById('confirmBadgeKey');
+    const confirmBadgeDeleteDesc = document.getElementById('confirmBadgeDeleteDesc');
+
+    function promptDeleteBadge(id, key, name) {
+      confirmBadgeId.value = id;
+      confirmBadgeKey.value = key;
+      confirmBadgeDeleteDesc.innerHTML = `هل أنت متأكد من حذف شارة <strong>"${name}"</strong> (${key}) نهائياً؟ سيتم إلغاؤها من جميع الأعضاء.`;
+      deleteBadgeModal.classList.add('show');
+    }
+
+    function closeDeleteBadgeModal() {
+      if (deleteBadgeModal) deleteBadgeModal.classList.remove('show');
+    }
+
+    // دوال السحب
+    const revokeBadgeModal = document.getElementById('confirmRevokeBadgeModal');
+    const confirmRevokeDiscordId = document.getElementById('confirmRevokeDiscordId');
+    const confirmRevokeBadgeKey = document.getElementById('confirmRevokeBadgeKey');
+    const confirmRevokeBadgeDesc = document.getElementById('confirmRevokeBadgeDesc');
+
+    function promptRevokeBadge(discordId, key, badgeName, username) {
+      confirmRevokeDiscordId.value = discordId;
+      confirmRevokeBadgeKey.value = key;
+      confirmRevokeBadgeDesc.innerHTML = `هل أنت متأكد من سحب شارة <strong>"${badgeName}"</strong> من العضو <strong>"${username}"</strong>؟`;
+      revokeBadgeModal.classList.add('show');
+    }
+
+    function closeRevokeBadgeModal() {
+      if (revokeBadgeModal) revokeBadgeModal.classList.remove('show');
+    }
+
+    // القائمة المنسدلة التفاعلية (Searchable Select Menu)
+    const dropdownMenu = document.getElementById('badgeDropdownMenu');
+    const dropdownArrow = document.getElementById('badgeDropdownArrow');
+    const badgeSearch = document.getElementById('badgeSearchInModal');
+    const badgeOptions = document.querySelectorAll('.badge-option-item');
+    const noBadgeFound = document.getElementById('noBadgeSearchFound');
+
+    function toggleBadgeDropdown() {
+      const isHidden = dropdownMenu.classList.contains('hidden');
+      dropdownMenu.classList.toggle('hidden', !isHidden);
+      dropdownArrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+      if (isHidden && badgeSearch) {
+        badgeSearch.value = '';
+        filterBadgeOptions('');
+        setTimeout(() => badgeSearch.focus(), 50);
+      }
+    }
+
+    function selectBadgeOption(key, name, icon, color) {
+      document.getElementById('selectedBadgeKeyInput').value = key;
+      document.getElementById('selectedBadgeDisplay').innerHTML = `
+        <span class="material-symbols-outlined text-xl" style="color: ${color};">${icon}</span>
+        <span class="text-xs font-extrabold text-slate-900">${name}</span>
+        <span class="text-[10px] font-mono text-slate-400" dir="ltr">(${key})</span>
+      `;
+      toggleBadgeDropdown();
+    }
+
+    function filterBadgeOptions(q) {
+      let count = 0;
+      badgeOptions.forEach(opt => {
+        const name = opt.getAttribute('data-name') || '';
+        const key = opt.getAttribute('data-key') || '';
+        if (!q || name.includes(q) || key.includes(q)) {
+          opt.style.display = 'flex';
+          count++;
+        } else {
+          opt.style.display = 'none';
+        }
+      });
+      if (noBadgeFound) noBadgeFound.classList.toggle('hidden', count > 0);
+    }
+
+    if (badgeSearch) {
+      badgeSearch.addEventListener('input', (e) => {
+        filterBadgeOptions((e.target.value || '').trim().toLowerCase());
+      });
+    }
+
+    // إغلاق القائمة عند النقر بالخارج
+    document.addEventListener('click', (e) => {
+      const trigger = document.getElementById('badgeDropdownTrigger');
+      if (dropdownMenu && !dropdownMenu.contains(e.target) && !trigger.contains(e.target)) {
+        dropdownMenu.classList.add('hidden');
+        if (dropdownArrow) dropdownArrow.style.transform = 'rotate(0deg)';
+      }
+    });
+  </script>
+</body>
+</html>
