@@ -134,8 +134,8 @@
     <div class="simple-spinner"></div>
   </div>
 
-  <div id="toastNotification" class="bg-[#0a122c] text-white border border-slate-700">
-    <span class="material-symbols-outlined text-xl text-[#ffd000]" id="toastIcon">check_circle</span>
+  <div id="toastNotification" class="bg-gray text-white border border-slate-700">
+    <span class="material-symbols-outlined text-xl text-black" id="toastIcon">check_circle</span>
     <span id="toastMessage">تم الحفظ بنجاح</span>
   </div>
 
@@ -167,10 +167,6 @@
       <!-- ترويسة الصفحة -->
       <div class="flex items-center justify-between pb-4 border-b border-slate-200/80 flex-wrap gap-4">
         <div>
-          <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#0a122c]/5 text-[#0a122c] border border-slate-200 mb-2">
-            <span class="material-symbols-outlined text-sm">palette</span>
-            <span>ميزة حصرية: Veloqra Pro & Staff</span>
-          </div>
           <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">تخصيص مظهر بروفايلك</h1>
           <p class="text-xs sm:text-sm text-slate-500 mt-1">خصص مظهر صفحتك، شاراتك المعروضة، والروابط بطريقة ذكية</p>
         </div>
@@ -226,26 +222,39 @@
         <div id="tab-identity" class="tab-content form-section-card space-y-4">
           <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
             <span class="material-symbols-outlined text-blue-600">badge</span>
-            <h2 class="text-base font-extrabold text-slate-900">الهوية والرابط المخصص</h2>
+            <h2 class="text-base font-extrabold text-slate-900">الهوية الرئيسية</h2>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="field-label">الرابط المخصص (Slug) <span class="text-slate-400 font-mono">(app.veloqra.xyz/users/your-name)</span></label>
-              <input type="text" name="customSlug" value="<%= dbUser.customSlug || '' %>" placeholder="مثال: mohammad" class="input-box font-mono" dir="ltr">
-            </div>
+<div>
+  <label class="field-label">الرابط المخصص</label>
+  <div class="flex items-center rounded-xl bg-slate-50 border border-slate-200 overflow-hidden focus-within:border-[#0a122c] focus-within:bg-white focus-within:ring-2 focus-within:ring-[#0a122c]/10 transition-all" dir="ltr">
+    <!-- البادئة الثابتة -->
+    <span class="px-3.5 py-2.5 bg-slate-100/80 border-r border-slate-200 text-slate-400 font-mono text-xs select-none shrink-0">
+      app.veloqra.xyz/users/
+    </span>
+    <!-- حقل كتابة الاسم المخصص -->
+    <input 
+      type="text" 
+      name="customSlug" 
+      value="<%= dbUser.customSlug || '' %>" 
+      placeholder="myname1" 
+      class="w-full px-3 py-2.5 bg-transparent text-slate-800 font-mono text-xs outline-none"
+    >
+  </div>
+</div>
 
             <div>
-              <label class="field-label">تفعيل الثيم المخصص</label>
+              <label class="field-label">ثيم صفحة البروفايل</label>
               <select name="themeEnabled" class="input-box font-bold cursor-pointer">
-                <option value="true" <%= theme.enabled ? 'selected' : '' %>>مفعّل</option>
-                <option value="false" <%= !theme.enabled ? 'selected' : '' %>>معطّل (استخدام التصميم القياسي)</option>
+                <option value="true" <%= theme.enabled ? 'selected' : '' %>>مخصص</option>
+                <option value="false" <%= !theme.enabled ? 'selected' : '' %>>عادي</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label class="field-label">النبذة التعريفية (About Me)</label>
+            <label class="field-label">النبذة (About Me)</label>
             <textarea name="aboutText" rows="3" placeholder="اكتب نبذة مختصرة عنك تظهر في صفحتك..." class="input-box"><%= dbUser.about || '' %></textarea>
           </div>
         </div>
@@ -257,7 +266,6 @@
               <span class="material-symbols-outlined text-amber-500">military_tech</span>
               <h2 class="text-base font-extrabold text-slate-900">الشارات المعروضة في بروفايلك</h2>
             </div>
-            <span class="text-xs text-slate-400">حدد فقط الشارات التي ترغب بإظهارها</span>
           </div>
 
           <% if (myBadges && myBadges.length > 0) { %>
@@ -273,7 +281,6 @@
                     <span class="material-symbols-outlined text-2xl" style="color: <%= badgeInfo.color %>;"><%= badgeInfo.icon %></span>
                     <div>
                       <h4 class="text-xs sm:text-sm font-extrabold text-slate-900"><%= badgeInfo.name %></h4>
-                      <span class="text-[10px] font-mono text-slate-400" dir="ltr"><%= cleanK %></span>
                     </div>
                   </div>
                   <input type="checkbox" name="displayedBadges" value="<%= cleanK %>" <%= isChecked ? 'checked' : '' %> class="badge-checkbox w-5 h-5 rounded-lg accent-[#0a122c] cursor-pointer">
@@ -281,7 +288,7 @@
               <% }) %>
             </div>
           <% } else { %>
-            <div class="text-center py-8 text-xs text-slate-400">لا توجد شارات مسندة لحسابك حالياً.</div>
+            <div class="text-center py-8 text-xs text-slate-400">لا توجد شارات مسندة لحسابك حالياً</div>
           <% } %>
         </div>
 
@@ -289,23 +296,23 @@
         <div id="tab-background" class="tab-content form-section-card space-y-4 hidden">
           <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
             <span class="material-symbols-outlined text-amber-600">wallpaper</span>
-            <h2 class="text-base font-extrabold text-slate-900">الخلفية ومظهر الكرت</h2>
+            <h2 class="text-base font-extrabold text-slate-900">الخلفية وبطاقة البروفايل</h2>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="field-label">نوع الخلفية</label>
               <select name="bgType" class="input-box font-bold cursor-pointer">
-                <option value="color" <%= theme.bgType === 'color' ? 'selected' : '' %>>لون سادة</option>
-                <option value="gradient" <%= theme.bgType === 'gradient' ? 'selected' : '' %>>تدرج لوني (Gradient)</option>
+                <option value="color" <%= theme.bgType === 'color' ? 'selected' : '' %>>لون عادي</option>
+                <option value="gradient" <%= theme.bgType === 'gradient' ? 'selected' : '' %>>تدرج لوني</option>
                 <option value="image" <%= theme.bgType === 'image' ? 'selected' : '' %>>صورة خلفية</option>
                 <option value="video" <%= theme.bgType === 'video' ? 'selected' : '' %>>فيديو بدون صوت</option>
-                <option value="video_sound" <%= theme.bgType === 'video_sound' ? 'selected' : '' %>>فيديو مع زر صوت</option>
+                <option value="video_sound" <%= theme.bgType === 'video_sound' ? 'selected' : '' %>>فيديو مع صوت</option>
               </select>
             </div>
 
             <div>
-              <label class="field-label">قيمة الخلفية (كود لون أو رابط مباشر)</label>
+              <label class="field-label">قيمة الخلفية (رابط، او قيمة لونية)</label>
               <div class="flex items-center gap-2">
                 <input type="color" value="<%= (theme.bgValue && theme.bgValue.startsWith('#')) ? theme.bgValue : '#0a122c' %>" oninput="document.getElementById('bgValueInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
                 <input type="text" id="bgValueInput" name="bgValue" value="<%= theme.bgValue || '#0a122c' %>" placeholder="#0a122c أو رابط مباشر MP4 / WebP" class="input-box font-mono" dir="ltr">
@@ -313,12 +320,12 @@
             </div>
 
             <div>
-              <label class="field-label">لون خلفية كرت البروفايل</label>
+              <label class="field-label">لون خلفية بطاقة البروفايل</label>
               <input type="text" name="cardBg" value="<%= theme.cardBg || 'rgba(255, 255, 255, 0.05)' %>" placeholder="rgba(255, 255, 255, 0.05)" class="input-box font-mono" dir="ltr">
             </div>
 
             <div>
-              <label class="field-label">قوة تغبيش الكرت (Backdrop Blur)</label>
+              <label class="field-label">نسبة تغبيش بطاقة البروفايل</label>
               <input type="text" name="cardBlur" value="<%= theme.cardBlur || '16px' %>" placeholder="16px" class="input-box font-mono" dir="ltr">
             </div>
           </div>
@@ -328,7 +335,7 @@
         <div id="tab-colors" class="tab-content form-section-card space-y-4 hidden">
           <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
             <span class="material-symbols-outlined text-purple-600">brush</span>
-            <h2 class="text-base font-extrabold text-slate-900">الألوان والخطوط</h2>
+            <h2 class="text-base font-extrabold text-slate-900">النصوص</h2>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -341,7 +348,7 @@
             </div>
 
             <div>
-              <label class="field-label">لون التمييز (Accent Color)</label>
+              <label class="field-label">لون التمييز الثانوي</label>
               <div class="flex items-center gap-2">
                 <input type="color" value="<%= (theme.accentColor && theme.accentColor.startsWith('#')) ? theme.accentColor : '#ffd000' %>" oninput="document.getElementById('accentColorInput').value = this.value" class="w-10 h-10 p-0 border border-slate-200 rounded-xl cursor-pointer shrink-0">
                 <input type="text" id="accentColorInput" name="accentColor" value="<%= theme.accentColor || '#ffd000' %>" class="input-box font-mono uppercase" dir="ltr">
@@ -361,12 +368,12 @@
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
-              <label class="field-label">رابط مؤشر ماوس مخصص (Cursor URL)</label>
+              <label class="field-label">رابط مؤشر الماوس</label>
               <input type="text" name="customCursorUrl" value="<%= theme.customCursorUrl || '' %>" placeholder="رابط صورة مؤشر .cur أو .png" class="input-box font-mono" dir="ltr">
             </div>
 
             <div>
-              <label class="field-label">رابط ملف صوتي يعمل بالخلفية (Audio URL)</label>
+              <label class="field-label">رابط ملف صوتي ليعمل بالخلفية</label>
               <input type="text" name="audioUrl" value="<%= theme.audioUrl || '' %>" placeholder="رابط مباشر MP3" class="input-box font-mono" dir="ltr">
             </div>
           </div>
@@ -376,15 +383,15 @@
         <div id="tab-overlay" class="tab-content form-section-card space-y-4 hidden">
           <div class="flex items-center gap-2 pb-3 border-b border-slate-100">
             <span class="material-symbols-outlined text-emerald-600">touch_app</span>
-            <h2 class="text-base font-extrabold text-slate-900">شاشة الدخول (Click to Enter)</h2>
+            <h2 class="text-base font-extrabold text-slate-900">شاشة الدخول</h2>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="field-label">حالة شاشة الدخول</label>
+              <label class="field-label">شاشة الدخول</label>
               <select name="entryOverlayEnabled" class="input-box font-bold cursor-pointer">
-                <option value="false" <%= !overlay.enabled ? 'selected' : '' %>>معطّلة</option>
-                <option value="true" <%= overlay.enabled ? 'selected' : '' %>>مفعّلة</option>
+                <option value="false" <%= !overlay.enabled ? 'selected' : '' %>>تعطيل</option>
+                <option value="true" <%= overlay.enabled ? 'selected' : '' %>>تفعيل</option>
               </select>
             </div>
 
@@ -425,7 +432,7 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-sky-600">loyalty</span>
-                <h3 class="text-sm font-extrabold text-slate-900">الشارات والنصوص والصور المخصصة</h3>
+                <h3 class="text-sm font-extrabold text-slate-900">العناصر</h3>
               </div>
               <button type="button" onclick="openAddTextModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1 border border-slate-200">
                 <span class="material-symbols-outlined text-sm">add</span>
@@ -434,14 +441,14 @@
             </div>
 
             <div id="customTextsList" class="space-y-2"></div>
-            <div id="noTextsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لم تقم بإضافة شارات أو نصوص بعد.</div>
+            <div id="noTextsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لم تقم باضافة اي عنصر بعد</div>
           </div>
 
           <div class="space-y-3 pt-3 border-t border-slate-100">
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
               <div class="flex items-center gap-2">
                 <span class="material-symbols-outlined text-emerald-600">share</span>
-                <h3 class="text-sm font-extrabold text-slate-900">روابط التواصل الاجتماعي</h3>
+                <h3 class="text-sm font-extrabold text-slate-900">الروابط</h3>
               </div>
               <button type="button" onclick="openAddSocialModal()" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-all flex items-center gap-1 border border-slate-200">
                 <span class="material-symbols-outlined text-sm">add</span>
@@ -450,7 +457,7 @@
             </div>
 
             <div id="socialLinksList" class="space-y-2"></div>
-            <div id="noSocialsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لا توجد روابط تواصل مسجلة.</div>
+            <div id="noSocialsNotice" class="text-center py-4 text-xs text-slate-400 hidden">لم تقم باضافة اي روابط بعد</div>
           </div>
         </div>
 
@@ -462,7 +469,7 @@
           </button>
           
           <a href="/profile" class="py-3 px-6 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors border border-slate-200">
-            العودة للملف
+            العودة للبروفايل
           </a>
         </div>
 
@@ -475,7 +482,7 @@
   <div class="custom-modal-backdrop" id="addTextModal">
     <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-        <h3 class="text-sm font-extrabold text-slate-900">إضافة عنصر مخصص</h3>
+        <h3 class="text-sm font-extrabold text-slate-900">إضافة عنصر</h3>
         <button type="button" onclick="closeAddTextModal()" class="text-slate-400 hover:text-slate-600"><span class="material-symbols-outlined">close</span></button>
       </div>
 
@@ -489,18 +496,18 @@
         </div>
 
         <div id="fieldBadgeIcon">
-          <label class="field-label">رمز الأيقونة (Material Symbol)</label>
-          <input type="text" id="modalTextIcon" placeholder="code أو star أو verified" class="input-box font-mono" dir="ltr">
+          <label class="field-label">رمز الأيقونة</label>
+          <input type="text" id="modalTextIcon" placeholder="icons from - google icons" class="input-box font-mono" dir="ltr">
         </div>
 
         <div id="fieldBadgeText">
           <label class="field-label">النص الظاهر</label>
-          <input type="text" id="modalTextTitle" placeholder="مثال: مطور بايثون" class="input-box">
+          <input type="text" id="modalTextTitle" placeholder="مطور" class="input-box">
         </div>
 
         <div id="fieldImageUrl" class="hidden">
           <label class="field-label">رابط الصورة المباشر</label>
-          <input type="text" id="modalImageUrl" placeholder="https://domain.com/badge.webp" class="input-box font-mono" dir="ltr">
+          <input type="text" id="modalImageUrl" placeholder="https://images.com/badge.webp" class="input-box font-mono" dir="ltr">
         </div>
 
         <div>
@@ -521,7 +528,7 @@
     </div>
   </div>
 
-  <!-- مودال إضافة رابط تواصل -->
+<!-- 2. مودال إضافة رابط تواصل -->
   <div class="custom-modal-backdrop" id="addSocialModal">
     <div class="bg-white border border-slate-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
       <div class="flex items-center justify-between pb-2 border-b border-slate-100">
@@ -531,8 +538,21 @@
 
       <div class="space-y-3">
         <div>
-          <label class="field-label">اسم الأيقونة أو المنصة</label>
-          <input type="text" id="modalSocialPlatform" placeholder="discord أو link أو code أو mail" class="input-box font-mono" dir="ltr">
+          <label class="field-label">اختر المنصة</label>
+          <select id="modalSocialPlatform" onchange="handlePlatformPreset(this.value)" class="input-box font-bold cursor-pointer">
+            <option value="discord">Discord (ديسكورد)</option>
+            <option value="github">GitHub (غيت هاب)</option>
+            <option value="youtube">YouTube (يوتيوب)</option>
+            <option value="x">X / Twitter (تويتر)</option>
+            <option value="telegram">Telegram (تيليجرام)</option>
+            <option value="instagram">Instagram (انستغرام)</option>
+            <option value="tiktok">TikTok (تيك توك)</option>
+            <option value="facebook">Facebook (فيسبوك)</option>
+            <option value="twitch">Twitch (تويتش)</option>
+            <option value="steam">Steam (ستيم)</option>
+            <option value="spotify">Spotify (سبوتيفاي)</option>
+            <option value="link">رابط عام (موقع ويب)</option>
+          </select>
         </div>
 
         <div>
@@ -560,6 +580,31 @@
   <script src="/js/script.js"></script>
 
   <script>
+function getPlatformIconHtml(platform, size = 18) {
+  const p = (platform || '').trim().toLowerCase();
+  
+  // خريطة أيقونات المنصات بصيغة SVG نقية
+  const brandIcons = {
+    discord: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.929 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.893.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.028zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>`,
+    github: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>`,
+    youtube: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>`,
+    x: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+    twitter: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`,
+    telegram: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.197 1.006.128.832.942z"/></svg>`,
+    instagram: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>`,
+    tiktok: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>`,
+    twitch: `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>`
+  };
+
+  if (brandIcons[p]) {
+    return brandIcons[p];
+  }
+  return `<span class="material-symbols-outlined text-lg">${platform || 'link'}</span>`;
+}
+  </script>
+
+  <script>
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));

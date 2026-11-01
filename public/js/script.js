@@ -40,11 +40,6 @@ if (burgerBtn && mobileMenu && burgerIcon) {
 // 3. منع فحص العنصر (Inspect Element Protection)
 // =========================================
 
-// منع القائمة المنسدلة بالزر الأيمن للفأرة (Right Click)
-document.addEventListener('contextmenu', (e) => {
-  e.preventDefault();
-});
-
 // منع اختصارات المطورين الشائعة
 document.addEventListener('keydown', (e) => {
   // منع F12
