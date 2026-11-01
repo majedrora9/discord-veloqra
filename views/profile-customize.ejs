@@ -187,22 +187,22 @@
       <div class="flex items-center gap-2 overflow-x-auto pb-2 custom-inner-scroll" id="tabsHeader">
         <button type="button" onclick="switchTab('tab-identity')" class="tab-btn active" id="btn-tab-identity">
           <span class="material-symbols-outlined text-base">badge</span>
-          <span>الهوية والرابط</span>
+          <span>الهوية</span>
         </button>
 
         <button type="button" onclick="switchTab('tab-badges')" class="tab-btn" id="btn-tab-badges">
           <span class="material-symbols-outlined text-base">military_tech</span>
-          <span>عرض الشارات</span>
+          <span>الشارات</span>
         </button>
 
         <button type="button" onclick="switchTab('tab-background')" class="tab-btn" id="btn-tab-background">
           <span class="material-symbols-outlined text-base">wallpaper</span>
-          <span>الخلفية والكرت</span>
+          <span>الخلفية</span>
         </button>
 
         <button type="button" onclick="switchTab('tab-colors')" class="tab-btn" id="btn-tab-colors">
           <span class="material-symbols-outlined text-base">brush</span>
-          <span>الألوان والخطوط</span>
+          <span>النصوص</span>
         </button>
 
         <button type="button" onclick="switchTab('tab-overlay')" class="tab-btn" id="btn-tab-overlay">
@@ -212,7 +212,7 @@
 
         <button type="button" onclick="switchTab('tab-links')" class="tab-btn" id="btn-tab-links">
           <span class="material-symbols-outlined text-base">share</span>
-          <span>العناصر والروابط</span>
+          <span>العناصر</span>
         </button>
       </div>
 
@@ -752,7 +752,7 @@
         const result = await response.json();
 
         if (response.ok && result.success) {
-          showToast(result.message || 'تم حفظ التعديلات بنجاح!', 'check_circle');
+          showToast(result.message || 'تم حفظ التعديلات بنجاح', 'check_circle');
         } else {
           showToast(result.message || 'حدث خطأ أثناء الحفظ', 'error');
         }
