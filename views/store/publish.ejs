@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - نشر منتج جديد</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="shortcut icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Veloqra">
+  <meta property="og:title" content="Veloqra Store - نشر منتج">
+  <meta property="og:description" content="نشر منتج أو خدمة جديدة في متجر فيلوكرا">
+  <meta property="og:image" content="/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffe27a',
+              gold: '#ffe27a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
+    .page-clean-header nav .hidden.md\:block a {
+      background-color: #0a122c !important;
+      color: #ffffff !important;
+      border-color: #0a122c !important;
+    }
+
+    .trash-btn-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 9999px;
+      background-color: #fee2e2;
+      color: #ef4444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid #fecaca;
+      cursor: pointer;
+    }
+    .trash-btn-circle:hover {
+      background-color: #fecaca;
+      color: #dc2626;
+      transform: scale(1.08);
+    }
+    .trash-btn-circle .material-symbols-outlined {
+      font-size: 16px;
+      color: #ef4444;
+    }
+
+    #appToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      padding: 0.85rem 1.5rem;
+      border-radius: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #appToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .custom-select-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 0.55rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #0a122c;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .custom-select-trigger:hover {
+      border-color: #4287f5;
+    }
+    .custom-select-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: 0;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      box-shadow: 0 15px 35px -5px rgba(10, 18, 44, 0.15);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 240px;
+    }
+    .custom-select-dropdown.active {
+      display: flex;
+    }
+    .custom-select-search {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+      background: #f8fafc;
+    }
+    .custom-select-options {
+      overflow-y: auto;
+      max-height: 180px;
+    }
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      transition: background 0.15s ease;
+    }
+    .custom-select-option:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .pub-type-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      text-align: right;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      border: 1px solid #e2e8f0;
+      background: #ffffff;
+      color: #334155;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .pub-type-card:hover {
+      border-color: #4287f5;
+    }
+    .pub-type-card .pt-icon {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 0.75rem;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .pub-type-card .pt-title {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+    .pub-type-card .pt-sub {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: #94a3b8;
+    }
+    .pub-type-card.active {
+      background: #0a122c;
+      border-color: #0a122c;
+      color: #ffffff;
+    }
+    .pub-type-card.active .pt-icon {
+      background: rgba(255, 255, 255, 0.12);
+      color: #ffd000;
+    }
+    .pub-type-card.active .pt-sub {
+      color: #cbd5e1;
+    }
+
+    .publish-actions {
+      position: sticky;
+      bottom: 1.5rem;
+      z-index: 20;
+      padding: 0.85rem;
+      border-radius: 1.25rem;
+      border: 1px solid #e2e8f0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px -5px rgba(10, 18, 44, 0.12);
+    }
+  </style>
+</head>
+<body class="loading-active text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <div id="appToast" class="flex items-center gap-2.5 shadow-2xl border">
+    <span class="material-symbols-outlined text-lg" id="toastIcon">check_circle</span>
+    <span id="toastMsg">تمت العملية بنجاح</span>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+    <%- include('../partials/header') %>
+  </header>
+
+  <main class="w-full relative flex-1 py-10 md:py-14">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+
+      <div class="flex items-center gap-3 mb-8">
+        <a href="/store" aria-label="العودة للمتجر" title="العودة للمتجر" class="h-10 px-3 sm:px-4 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shrink-0 no-underline">
+          <span class="material-symbols-outlined text-xl">arrow_forward</span>
+          <span class="text-xs font-bold hidden sm:inline">العودة للمتجر</span>
+        </a>
+        <div class="min-w-0">
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">نشر منتج جديد</h2>
+        </div>
+      </div>
+
+      <form id="publishForm" onsubmit="submitPublishProduct(event)" class="space-y-6">
+
+        <section class="rounded-2xl bg-white border border-slate-200 p-5 sm:p-7 space-y-4 shadow-2xs">
+          <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-xl">edit_note</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">المعلومات الأساسية</h3>
+            </div>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="publishTitle" class="text-xs font-bold text-slate-700">عنوان المنتج <span class="text-rose-500">*</span></label>
+              <span id="titleCounter" class="text-[10px] font-mono text-slate-400">0 / 40</span>
+            </div>
+            <input
+              type="text"
+              id="publishTitle"
+              name="title"
+              required
+              maxlength="40"
+              oninput="handlePublishTitleInput(this)"
+              placeholder="مثال: رصيد سيرياتيل كاش أو باقة حسابات"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold focus:outline-none focus:bg-white focus:border-blue-500 transition-colors"
+            >
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="publishDesc" class="text-xs font-bold text-slate-700">وصف المنتج (اختياري)</label>
+              <span id="descCounter" class="text-[10px] font-mono text-slate-400">0 / 800</span>
+            </div>
+            <textarea
+              id="publishDesc"
+              name="description"
+              rows="4"
+              maxlength="800"
+              oninput="document.getElementById('descCounter').textContent = this.value.length + ' / 800'"
+              placeholder="اكتب كامل التفاصيل، فترة الضمان، وطريقة التسليم..."
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm focus:outline-none focus:bg-white focus:border-blue-500 transition-colors leading-relaxed"
+            ></textarea>
+          </div>
+        </section>
+
+        <section class="rounded-2xl bg-white border border-slate-200 p-5 sm:p-7 space-y-4 shadow-2xs">
+          <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-xl">inventory_2</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">نوع المنتج وشروط الطلب</h3>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button type="button" onclick="setPublishType('single')" id="pubTypeSingle" class="pub-type-card active" aria-pressed="true">
+              <span class="pt-icon"><span class="material-symbols-outlined text-xl">sell</span></span>
+              <span class="min-w-0">
+                <span class="pt-title">بيع فردي</span>
+                <span class="pt-sub">منتج واحد بعدة طرق دفع</span>
+              </span>
+            </button>
+            <button type="button" onclick="setPublishType('multi')" id="pubTypeMulti" class="pub-type-card" aria-pressed="false">
+              <span class="pt-icon"><span class="material-symbols-outlined text-xl">category</span></span>
+              <span class="min-w-0">
+                <span class="pt-title">متعدد المبيعات</span>
+                <span class="pt-sub">عدة عناصر، لكل عنصر أسعاره وكميته</span>
+              </span>
+            </button>
+          </div>
+
+          <div id="singleQuantityWrap" class="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <label for="publishQuantity" class="text-xs font-bold text-slate-700">إجمالي الكمية المتوفرة للبيع (-1 تعني غير محدودة)</label>
+            <input
+              type="number"
+              id="publishQuantity"
+              name="quantity"
+              value="1"
+              min="-1"
+              max="999"
+              required
+              dir="ltr"
+              class="w-24 px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm font-bold font-mono text-center outline-none focus:border-blue-500"
+            >
+          </div>
+
+          <!-- زر تبديل تسجيل الدخول المنضبط -->
+          <div class="flex items-center justify-between gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+            <div>
+              <label for="publishRequireLogin" class="text-xs font-bold text-slate-800 block">هل تريد ان يكون المستخدم مسجلاً دخول؟</label>
+              <p class="text-[11px] text-slate-500 mt-0.5">عند تفعيل هذا الخيار لن يتمكن الزوار غير المسجلين من طلب هذا المنتج</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer select-none shrink-0" dir="ltr">
+              <input type="checkbox" id="publishRequireLogin" name="requireLogin" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-blue-600 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+
+          <!-- زر تبديل رقم الهاتف المنضبط -->
+          <div id="publishPhonePromptWrap" class="hidden flex items-center justify-between gap-3 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200">
+            <div>
+              <label for="publishRequirePhone" class="text-xs font-bold text-amber-900 block flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm text-amber-600">phone_iphone</span>
+                <span>هل يتطلب هذا المنتج رقماً من المشتري؟</span>
+              </label>
+              <p class="text-[11px] text-amber-700 mt-0.5">اكتشفنا أن المنتج قد يكون رصيداً أو شحناً، فعّل الخيار ليُطلب رقم هاتف المشتري عند إرسال السلة</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer select-none shrink-0" dir="ltr">
+              <input type="checkbox" id="publishRequirePhone" name="requirePhoneNumber" class="sr-only peer">
+              <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-amber-500 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:after:translate-x-5"></div>
+            </label>
+          </div>
+        </section>
+
+        <section class="rounded-2xl bg-white border border-slate-200 p-5 sm:p-7 space-y-4 shadow-2xs">
+          <div class="flex items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">photo_library</span>
+              </div>
+              <div>
+                <h3 class="text-sm font-black text-slate-900">الصور</h3>
+                <p class="text-[11px] text-slate-400 font-medium">ارفع من جهازك مباشرة أو ضع روابط صور (10 كحد أقصى)</p>
+              </div>
+            </div>
+            <button type="button" onclick="addImageInputRow()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer border-none bg-transparent shrink-0">
+              <span class="material-symbols-outlined text-sm">add</span> إضافة صورة
+            </button>
+          </div>
+          <div id="imageInputsContainer" class="space-y-2"></div>
+        </section>
+
+        <section class="rounded-2xl bg-white border border-slate-200 p-5 sm:p-7 space-y-4 shadow-2xs">
+          <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-xl">payments</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-black text-slate-900">طرق الدفع والاسعار</h3>
+              <p class="text-[11px] text-slate-400 font-medium" id="pricingHint">حدد طرق الدفع والأسعار المقبولة لديك</p>
+            </div>
+          </div>
+
+          <div id="publishSinglePrices" class="space-y-3">
+            <div id="singleCurrencyRows" class="space-y-2"></div>
+            <button type="button" onclick="addSingleCurrencyRow()" class="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer border-none bg-transparent">
+              <span class="material-symbols-outlined text-sm">add</span> إضافة عملة دفع أخرى
+            </button>
+          </div>
+
+          <div id="publishMultiItems" class="space-y-4 hidden">
+            <div id="subItemsContainer" class="space-y-4"></div>
+            <button type="button" onclick="addSubItemBlock()" class="py-2.5 px-4 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer border border-blue-200 transition-colors">
+              <span class="material-symbols-outlined text-base">add_circle</span>
+              <span>إضافة عنصر فرعي جديد</span>
+            </button>
+          </div>
+        </section>
+
+        <div class="publish-actions flex items-center gap-3">
+          <button type="submit" id="submitPublishBtn" class="flex-1 py-3 px-5 rounded-xl bg-[#ffe27a] hover:bg-[#ffd000] text-[#070b1a] font-bold text-xs shadow-md transition-colors cursor-pointer border-none flex items-center justify-center gap-1.5">
+            <span class="material-symbols-outlined text-base">cloud_upload</span>
+            <span>تأكيد ونشر المنتج</span>
+          </button>
+          <a href="/store" class="py-3 px-5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200 no-underline text-center">
+            إلغاء
+          </a>
+        </div>
+      </form>
+
+    </div>
+  </main>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+const ALL_CURRENCIES = [
+  // العملات الحالية
+  { key: 'SYP_CASH', name: 'ليرة سورية (نقداً)', icon: 'payments', iconColor: 'text-emerald-500 bg-emerald-50' },
+  { key: 'IQD_CASH', name: 'دينار عراقي (نقداً)', icon: 'payments', iconColor: 'text-red-500 bg-emerald-50' },
+  { key: 'SYP_SHAM', name: 'ليرة سورية (شام كاش)', img: '/syp_sham.png' },
+  { key: 'SYP_PAYMERA', name: 'ليرة سورية (بايميرا)', img: '/syp_paymera.png' },
+  { key: 'SYP_MTN', name: 'ليرة سورية (ام تي ان كاش)', img: '/syp_mtn.png' },
+  { key: 'SYP_SYRIATEL', name: 'ليرة سورية (سيرياتيل كاش)', img: '/syp_syriatel.png' },
+  { key: 'IQD_ASIACELL', name: 'دينار عراقي (آسيا سيل)', img: '/iqd_asiacell.png' },
+  { key: 'IQD_QI', name: 'دينار عراقي (بنك الرافدين Qi)', img: '/iqd_qi.png' },
+  { key: 'USD_SHAM', name: 'دولار (شام كاش)', img: '/usd_sham.png' },
+  { key: 'VELO_COIN', name: 'فيلو كوين (Velo Coin)', img: '/velo_coin.png' },
+
+  // العملات العربية والدولية
+  { key: 'TRY_PAPARA', name: 'ليرة تركية (بابارا Papara)', img: '/try_papara.png' },
+  { key: 'TRY_CASH', name: 'ليرة تركية (حوالة بنكية / كاش)', img: '/try_cash.png' },
+  { key: 'LBP_WHISH', name: 'ليرة لبنانية / دولار (Whish Money)', img: '/lbp_whish.png' },
+  { key: 'JOD_CLIQ', name: 'دينار أردني (كليك CliQ)', img: '/jod_cliq.png' },
+  { key: 'JOD_ORANGE', name: 'دينار أردني (أورنج موني Orange)', img: '/jod_orange.png' },
+  { key: 'EGP_VODAFONE', name: 'جنيه مصري (فودافون كاش)', img: '/egp_vodafone.png' },
+  { key: 'EGP_INSTAPAY', name: 'جنيه مصري (إنستاباي InstaPay)', img: '/egp_instapay.png' },
+  { key: 'SAR_STCPAY', name: 'ريال سعودي (STC Pay)', img: '/sar_stcpay.png' },
+  { key: 'SAR_URPAY', name: 'ريال سعودي (Urpay)', img: '/sar_urpay.png' },
+  { key: 'USD_PAYPAL', name: 'دولار أمريكي (PayPal)', img: '/usd_paypal.png' },
+
+  // العملات المغاربية الجديدة
+  { key: 'DZD_BARIDIMOB', name: 'دينار جزائري (بريدي موب BaridiMob)', img: '/dzd_baridimob.png' },
+  { key: 'DZD_CASH', name: 'دينار جزائري (CCP / نقداً)', img: '/dzd_cash.png' },
+  { key: 'MAD_CIH', name: 'درهم مغربي (CIH Bank)', img: '/mad_cih.png' },
+  { key: 'MAD_CASH', name: 'درهم مغربي (حوالة بنكية / نقداً)', img: '/mad_cash.png' },
+  { key: 'TND_D17', name: 'دينار تونسي (D17 البريد التونسي)', img: '/tnd_d17.png' },
+  { key: 'TND_FLOUCI', name: 'دينار تونسي (Flouci)', img: '/tnd_flouci.png' }
+];
+
+    let currentPublishType = 'single';
+
+    function renderCurrencyBadge(currKey, sizeClass = "w-5 h-5") {
+      const c = ALL_CURRENCIES.find(item => item.key === currKey);
+      if (c && c.icon) {
+        return `<span class="material-symbols-outlined ${sizeClass} rounded-full flex items-center justify-center text-[15px] ${c.iconColor || 'text-emerald-500 bg-emerald-50'} border border-emerald-200 shrink-0 font-bold" title="${c.name}">${c.icon}</span>`;
+      }
+      const imgSrc = (c && c.img) ? c.img : `/${currKey.toLowerCase()}.png`;
+      return `<img src="${imgSrc}" onerror="this.src='/logo.png'" class="${sizeClass} object-contain rounded-full bg-slate-50 shrink-0">`;
+    }
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById('appToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      if (isSuccess) {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700 show';
+        toastIcon.textContent = 'check_circle';
+        toastIcon.className = 'material-symbols-outlined text-lg text-[#ffd000]';
+      } else {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-rose-950 text-white border-rose-800 show';
+        toastIcon.textContent = 'error';
+        toastIcon.className = 'material-symbols-outlined text-lg text-rose-400';
+      }
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function handlePublishTitleInput(input) {
+      document.getElementById('titleCounter').textContent = input.value.length + ' / 40';
+      const promptWrap = document.getElementById('publishPhonePromptWrap');
+      if (!promptWrap) return;
+
+      const phoneCheckbox = document.getElementById('publishRequirePhone');
+      if (phoneCheckbox && phoneCheckbox.checked) {
+        promptWrap.classList.remove('hidden');
+        return;
+      }
+
+      const val = input.value.trim().toLowerCase();
+      const phoneKeywords = ['رصيد', 'شحن', 'سيرياتيل', 'mtn', 'اسياسيل', 'زين', 'كاش', 'سيم', 'خط', 'sim'];
+      const hasPhoneKeyword = phoneKeywords.some(k => val.includes(k));
+
+      if (hasPhoneKeyword) {
+        promptWrap.classList.remove('hidden');
+      } else {
+        promptWrap.classList.add('hidden');
+      }
+    }
+
+    function setPublishType(type) {
+      currentPublishType = type;
+      const bS = document.getElementById('pubTypeSingle');
+      const bM = document.getElementById('pubTypeMulti');
+      const secS = document.getElementById('publishSinglePrices');
+      const secM = document.getElementById('publishMultiItems');
+      const qtyWrap = document.getElementById('singleQuantityWrap');
+      const hint = document.getElementById('pricingHint');
+
+      bS.classList.toggle('active', type === 'single');
+      bM.classList.toggle('active', type === 'multi');
+      bS.setAttribute('aria-pressed', String(type === 'single'));
+      bM.setAttribute('aria-pressed', String(type === 'multi'));
+      secS.classList.toggle('hidden', type !== 'single');
+      secM.classList.toggle('hidden', type !== 'multi');
+
+      if (qtyWrap) {
+        qtyWrap.classList.toggle('hidden', type === 'multi');
+      }
+
+      if (type === 'multi') {
+        if (hint) hint.textContent = 'أضف العناصر المعروضة، ولكل عنصر خيارات عملات وأسعار وكميات مخصصة';
+        if (document.querySelectorAll('#subItemsContainer .sub-item-block').length === 0) {
+          addSubItemBlock();
+        }
+      } else if (hint) {
+        hint.textContent = 'حدد طرق الدفع والأسعار المقبولة لديك';
+      }
+    }
+
+    function uploadImageFile(fileInput) {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        showToast('حجم الصورة كبير، يرجى اختيار صورة أقل من 2 ميغابايت', false);
+        fileInput.value = '';
+        return;
+      }
+
+      const row = fileInput.closest('.img-row');
+      const urlInput = row.querySelector('input[type="url"]');
+      const thumb = row.querySelector('.img-thumb');
+      const statusIcon = row.querySelector('.upload-status-icon');
+
+      statusIcon.textContent = 'sync';
+      statusIcon.classList.add('animate-spin', 'text-blue-600');
+
+      const reader = new FileReader();
+
+      reader.onload = function(e) {
+        const base64Data = e.target.result;
+        urlInput.value = base64Data;
+        thumb.src = base64Data;
+        thumb.classList.remove('hidden');
+
+        statusIcon.textContent = 'check_circle';
+        statusIcon.classList.remove('animate-spin', 'text-blue-600');
+        statusIcon.classList.add('text-emerald-500');
+        showToast('تم تجهيز الصورة بنجاح!');
+      };
+
+      reader.onerror = function() {
+        statusIcon.textContent = 'cloud_upload';
+        statusIcon.classList.remove('animate-spin', 'text-blue-600');
+        showToast('فشل في قراءة ملف الصورة', false);
+      };
+
+      reader.readAsDataURL(file);
+    }
+
+    function imageRowHtml() {
+      return `
+        <div class="relative w-10 h-10 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center text-slate-300">
+          <span class="material-symbols-outlined text-lg">image</span>
+          <img alt="" class="img-thumb absolute inset-0 w-full h-full object-cover hidden" onload="this.classList.remove('hidden')" onerror="this.classList.add('hidden')">
+        </div>
+        <input type="url" name="images[]" onchange="previewImage(this)" placeholder="https://... رابط الصورة أو ارفع ملفاً" dir="ltr" class="flex-1 min-w-0 px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono focus:bg-white focus:outline-none focus:border-blue-500">
+        
+        <label class="w-8 h-8 rounded-full bg-blue-50 hover:bg-blue-100 text-blue-600 flex items-center justify-center cursor-pointer border border-blue-200 shrink-0" title="رفع صورة من الجهاز">
+          <span class="material-symbols-outlined text-base upload-status-icon">cloud_upload</span>
+          <input type="file" accept="image/*" class="hidden" onchange="uploadImageFile(this)">
+        </label>
+
+        <button type="button" onclick="removeImageRow(this)" class="trash-btn-circle shrink-0"><span class="material-symbols-outlined">delete</span></button>
+      `;
+    }
+
+    function previewImage(input) {
+      const img = input.closest('.img-row').querySelector('.img-thumb');
+      const url = input.value.trim();
+      if (url) {
+        img.src = url;
+      } else {
+        img.removeAttribute('src');
+        img.classList.add('hidden');
+      }
+    }
+
+    function addImageInputRow() {
+      const container = document.getElementById('imageInputsContainer');
+      if (container.querySelectorAll('.img-row').length >= 10) {
+        return showToast('الحد الأقصى لروابط الصور هو 10 صور فقط', false);
+      }
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-2 img-row';
+      div.innerHTML = imageRowHtml();
+      container.appendChild(div);
+    }
+
+    function removeImageRow(btn) {
+      const container = document.getElementById('imageInputsContainer');
+      const row = btn.closest('.img-row');
+      if (container.querySelectorAll('.img-row').length > 1) {
+        row.remove();
+      } else {
+        const input = row.querySelector('input[type="url"]');
+        input.value = '';
+        previewImage(input);
+      }
+    }
+
+    function populateCustomSelectOptions(container) {
+      container.innerHTML = ALL_CURRENCIES.map(c => `
+        <div class="custom-select-option" data-key="${c.key}" data-name="${c.name}" onclick="selectCustomOption(this)">
+          ${renderCurrencyBadge(c.key, 'w-5 h-5')}
+          <span class="truncate">${c.name}</span>
+        </div>
+      `).join('');
+    }
+
+    function toggleCustomSelect(trigger) {
+      const wrap = trigger.closest('.custom-select-wrap');
+      const dropdown = wrap.querySelector('.custom-select-dropdown');
+      const isActive = dropdown.classList.contains('active');
+      
+      document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('active'));
+      if (!isActive) {
+        dropdown.classList.add('active');
+        const optionsList = dropdown.querySelector('.custom-select-options');
+        if (!optionsList.hasChildNodes()) {
+          populateCustomSelectOptions(optionsList);
+        }
+      }
+    }
+
+    function filterCustomSelectOptions(input) {
+      const q = input.value.toLowerCase().trim();
+      const wrap = input.closest('.custom-select-wrap');
+      wrap.querySelectorAll('.custom-select-option').forEach(opt => {
+        const name = opt.getAttribute('data-name').toLowerCase();
+        opt.style.display = name.includes(q) ? 'flex' : 'none';
+      });
+    }
+
+    function selectCustomOption(opt) {
+      const wrap = opt.closest('.custom-select-wrap');
+      const key = opt.getAttribute('data-key');
+      const name = opt.getAttribute('data-name');
+
+      wrap.querySelector('input').value = key;
+      const trigger = wrap.querySelector('.custom-select-trigger');
+      
+      const badgeSlot = trigger.querySelector('.currency-badge-slot') || trigger.querySelector('img') || trigger.querySelector('span.material-symbols-outlined');
+      if (badgeSlot) {
+        badgeSlot.outerHTML = `<div class="currency-badge-slot shrink-0">${renderCurrencyBadge(key, 'w-5 h-5')}</div>`;
+      }
+      trigger.querySelector('.selected-text').textContent = name;
+
+      wrap.querySelector('.custom-select-dropdown').classList.remove('active');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.custom-select-wrap')) {
+        document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('active'));
+      }
+    });
+
+    function currencySelectHtml(valClass, searchPlaceholder, defaultVal = 'SYP_CASH') {
+      const defaultObj = ALL_CURRENCIES.find(c => c.key === defaultVal) || ALL_CURRENCIES[0];
+      return `
+        <div class="custom-select-wrap flex-1 min-w-0">
+          <input type="hidden" class="${valClass}" value="${defaultObj.key}">
+          <div class="custom-select-trigger" onclick="toggleCustomSelect(this)">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="currency-badge-slot shrink-0">
+                ${renderCurrencyBadge(defaultObj.key, 'w-5 h-5')}
+              </div>
+              <span class="selected-text truncate">${defaultObj.name}</span>
+            </div>
+            <span class="material-symbols-outlined text-sm shrink-0">expand_more</span>
+          </div>
+          <div class="custom-select-dropdown">
+            <div class="custom-select-search">
+              <input type="text" placeholder="${searchPlaceholder}" class="w-full px-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg outline-none" oninput="filterCustomSelectOptions(this)">
+            </div>
+            <div class="custom-select-options"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function addSingleCurrencyRow() {
+      const container = document.getElementById('singleCurrencyRows');
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-2 currency-row';
+      div.innerHTML = `
+        ${currencySelectHtml('curr-val', 'بحث عن العملة...', 'SYP_CASH')}
+        <input type="number" min="0" step="any" placeholder="السعر" class="curr-price w-28 sm:w-32 shrink-0 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono outline-none focus:bg-white focus:border-blue-500" dir="ltr">
+        <button type="button" onclick="removeCurrencyRow(this)" class="trash-btn-circle shrink-0"><span class="material-symbols-outlined">delete</span></button>
+      `;
+      container.appendChild(div);
+    }
+
+    function removeCurrencyRow(btn) {
+      const container = document.getElementById('singleCurrencyRows');
+      if (container.querySelectorAll('.currency-row').length > 1) {
+        btn.closest('.currency-row').remove();
+      }
+    }
+
+    function toggleSubItemInfinite(checkbox) {
+      const block = checkbox.closest('.sub-item-block');
+      const qtyInput = block.querySelector('.sub-qty-input');
+      if (checkbox.checked) {
+        qtyInput.value = -1;
+        qtyInput.disabled = true;
+        qtyInput.classList.add('opacity-40', 'bg-slate-200');
+      } else {
+        qtyInput.value = 1;
+        qtyInput.disabled = false;
+        qtyInput.classList.remove('opacity-40', 'bg-slate-200');
+      }
+    }
+
+    function addSubItemCurrencyRow(btn) {
+      const block = btn.closest('.sub-item-block');
+      const container = block.querySelector('.sub-item-currencies-container');
+      
+      const existingCurrs = Array.from(block.querySelectorAll('.sub-curr-val')).map(i => i.value);
+      const nextAvailable = ALL_CURRENCIES.find(c => !existingCurrs.includes(c.key));
+
+      if (!nextAvailable) {
+        return showToast('تمت إضافة جميع العملات المتاحة لهذا العنصر بالفعل!', false);
+      }
+
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-2 sub-curr-row';
+      div.innerHTML = `
+        ${currencySelectHtml('sub-curr-val', 'بحث عن العملة...', nextAvailable.key)}
+        <input type="number" min="0" step="any" placeholder="السعر" class="sub-price w-28 sm:w-32 shrink-0 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold outline-none focus:bg-white focus:border-blue-500" dir="ltr">
+        <button type="button" onclick="this.closest('.sub-curr-row').remove()" class="trash-btn-circle shrink-0">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      `;
+      container.appendChild(div);
+    }
+
+    function addSubItemBlock() {
+      const container = document.getElementById('subItemsContainer');
+      const block = document.createElement('div');
+      block.className = 'sub-item-block p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 space-y-3';
+      block.innerHTML = `
+        <div class="flex items-center justify-between gap-2">
+          <input type="text" placeholder="عنوان العنصر (مثال: الحساب رقم 1)" class="sub-title flex-1 min-w-0 px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold outline-none focus:border-blue-500">
+          <button type="button" onclick="this.closest('.sub-item-block').remove()" class="trash-btn-circle shrink-0" title="حذف العنصر">
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
+        <input type="text" placeholder="وصف موجز لهذا العنصر (اختياري)" class="sub-desc w-full px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-blue-500">
+        
+        <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 text-xs">
+          <div class="flex items-center gap-2">
+            <label class="font-bold text-slate-700">كمية هذا العنصر:</label>
+            <input type="number" min="1" value="1" class="sub-qty-input w-20 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 text-center font-mono font-bold outline-none focus:border-blue-500" dir="ltr">
+          </div>
+          <label class="flex items-center gap-1.5 cursor-pointer select-none">
+            <input type="checkbox" onchange="toggleSubItemInfinite(this)" class="rounded text-blue-600 focus:ring-0">
+            <span class="text-slate-600 font-bold text-[11px]">كمية غير محدودة (لانهائي)</span>
+          </label>
+        </div>
+
+        <div class="pt-2 border-t border-slate-200/80 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-slate-600">طرق الدفع والأسعار لهذا العنصر:</span>
+            <button type="button" onclick="addSubItemCurrencyRow(this)" class="text-[11px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 cursor-pointer border-none bg-transparent">
+              <span class="material-symbols-outlined text-sm">add</span> عملة إضافية
+            </button>
+          </div>
+          <div class="sub-item-currencies-container space-y-2">
+            <div class="flex items-center gap-2 sub-curr-row">
+              ${currencySelectHtml('sub-curr-val', 'بحث عن العملة...', 'SYP_CASH')}
+              <input type="number" min="0" step="any" placeholder="السعر" class="sub-price w-28 sm:w-32 shrink-0 px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold outline-none focus:bg-white focus:border-blue-500" dir="ltr">
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(block);
+    }
+
+    addImageInputRow();
+    addSingleCurrencyRow();
+
+    async function submitPublishProduct(e) {
+      e.preventDefault();
+      const title = document.getElementById('publishTitle').value.trim();
+      const description = document.getElementById('publishDesc').value.trim();
+      let quantity = Number(document.getElementById('publishQuantity').value);
+      const requireLogin = document.getElementById('publishRequireLogin')?.checked || false;
+      const requirePhoneNumber = document.getElementById('publishRequirePhone')?.checked || false;
+      
+      const imgInputs = document.querySelectorAll('#imageInputsContainer input[name="images[]"]');
+      const images = Array.from(imgInputs).map(i => i.value.trim()).filter(v => v.length > 0);
+
+      const payload = {
+        title,
+        description,
+        type: currentPublishType,
+        images,
+        requireLogin,
+        requirePhoneNumber
+      };
+
+      if (currentPublishType === 'single') {
+        payload.quantity = quantity;
+        const cRows = document.querySelectorAll('#singleCurrencyRows .currency-row');
+        const currencies = Array.from(cRows).map(r => ({
+          currency: r.querySelector('.curr-val').value,
+          price: Number(r.querySelector('.curr-price').value) || 0
+        })).filter(c => c.price > 0);
+
+        if (currencies.length === 0) return showToast('يرجى تحديد سعر واحد على الأقل للمنتج', false);
+        payload.currencies = currencies;
+      } else {
+        const sBlocks = document.querySelectorAll('#subItemsContainer .sub-item-block');
+        const subItems = [];
+        let anyInfinite = false;
+        let totalMultiQty = 0;
+
+        sBlocks.forEach(b => {
+          const itemTitle = (b.querySelector('.sub-title')?.value || '').trim();
+          const itemDesc = (b.querySelector('.sub-desc')?.value || '').trim();
+          const qtyVal = Number(b.querySelector('.sub-qty-input')?.value);
+          
+          if (qtyVal === -1) anyInfinite = true;
+          else totalMultiQty += (qtyVal || 0);
+
+          const currRows = b.querySelectorAll('.sub-curr-row');
+          const allowedCurrencies = [];
+
+          currRows.forEach(cr => {
+            const curr = cr.querySelector('.sub-curr-val')?.value;
+            const pr = Number(cr.querySelector('.sub-price')?.value) || 0;
+            if (curr && pr > 0 && !allowedCurrencies.some(a => a.currency === curr)) {
+              allowedCurrencies.push({ currency: curr, price: pr });
+            }
+          });
+
+          if (itemTitle.length > 0 && allowedCurrencies.length > 0) {
+            subItems.push({
+              title: itemTitle,
+              description: itemDesc,
+              quantity: qtyVal,
+              currency: allowedCurrencies[0].currency,
+              price: allowedCurrencies[0].price,
+              allowedCurrencies: allowedCurrencies
+            });
+          }
+        });
+
+        if (subItems.length === 0) {
+          return showToast('يرجى كتابة عنوان وسعر صحيح لعنصر واحد على الأقل في البيع المتعدد!', false);
+        }
+        payload.subItems = subItems;
+        payload.quantity = anyInfinite ? -1 : totalMultiQty;
+      }
+
+      const btn = document.getElementById('submitPublishBtn');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span><span>جاري النشر...</span>`;
+
+      try {
+        const res = await fetch('/store/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('تم نشر المنتج بنجاح!');
+          setTimeout(() => {
+            window.location.href = '/store';
+          }, 1000);
+        } else {
+          showToast(data.message || 'حدث خطأ أثناء النشر', false);
+          btn.disabled = false;
+          btn.innerHTML = `<span class="material-symbols-outlined text-base">cloud_upload</span><span>تأكيد ونشر المنتج</span>`;
+        }
+      } catch (err) {
+        showToast('تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً', false);
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-base">cloud_upload</span><span>تأكيد ونشر المنتج</span>`;
+      }
+    }
+  </script>
+</body>
+</html>

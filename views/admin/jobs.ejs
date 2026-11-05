@@ -7,7 +7,7 @@
 
   <link rel="icon" type="image/png" href="/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -91,6 +91,29 @@
       transform: translateY(-3px);
       box-shadow: 0 14px 28px -8px rgba(10, 18, 44, 0.07);
     }
+
+    .trash-btn-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 9999px;
+      background-color: #fee2e2;
+      color: #ef4444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid #fecaca;
+      cursor: pointer;
+    }
+    .trash-btn-circle:hover {
+      background-color: #fecaca;
+      color: #dc2626;
+      transform: scale(1.08);
+    }
+    .trash-btn-circle .material-symbols-outlined {
+      font-size: 18px;
+      color: #ef4444;
+    }
   </style>
 </head>
 <body class="loading-active bg-white text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
@@ -99,21 +122,22 @@
     <div class="simple-spinner"></div>
   </div>
 
-  <%- include('partials/header', { isSubPage: true, pageTitle: 'إدارة الاعمال' }) %>
+  <%- include('../partials/header', { isSubPage: true, pageTitle: 'إدارة الاعمال' }) %>
 
   <main class="w-full relative flex-1 bg-white py-10 md:py-14">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
 
       <div class="text-center max-w-2xl mx-auto mb-6">
         <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
-          ادارة الاعمال
+          ادارة الاعمال والتوظيف
         </h1>
         <p class="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
-          التحكم بحالة شواغر فريق فيلوكرا وفرز طلبات الانضمام واتخاذ القرارات الإدارية
+          التحكم بحالة شواغر فريق فيلوكرا ونشر وظائف جديدة وفرز طلبات الانضمام
         </p>
       </div>
 
-      <div class="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <!-- شريط البحث والفلتر وزر إنشاء وظيفة جديدة -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <div class="relative flex-1">
           <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
           <input 
@@ -127,14 +151,20 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <select id="jobStatusFilter" onchange="filterJobCards()" class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#0a122c] cursor-pointer w-full sm:w-auto shadow-sm">
-            <option value="all">جميع الوظائف</option>
-            <option value="open">الوظائف المفتوحة</option>
-            <option value="closed">الوظائف المغلقة</option>
+        <div class="flex items-center gap-3 w-full md:w-auto shrink-0 flex-wrap sm:flex-nowrap">
+          <select id="jobStatusFilter" onchange="filterJobCards()" class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-700 focus:outline-none focus:border-[#0a122c] cursor-pointer shadow-sm">
+            <option value="all">جميع الحالات</option>
+            <option value="open">المفتوحة</option>
+            <option value="closed">المغلقة</option>
           </select>
 
-          <span class="px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold whitespace-nowrap shadow-sm">
+          <!-- زر إضافة عمل جديد -->
+          <button type="button" onclick="openCreateJobModal()" class="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer border-none">
+            <span class="material-symbols-outlined text-base">add_circle</span>
+            <span>إضافة عمل جديد</span>
+          </button>
+
+          <span class="px-3 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold whitespace-nowrap shadow-sm">
             المعروض: <span class="font-mono text-blue-600 font-extrabold" id="jobVisibleCount"><%= (jobs && jobs.length) || 0 %></span>
           </span>
         </div>
@@ -157,9 +187,10 @@
                     </div>
                     <div class="min-w-0">
                       <h3 class="font-extrabold text-slate-900 text-base leading-tight truncate"><%= job.title %></h3>
-                      <% if (job.department) { %>
-                        <span class="text-[11px] text-slate-400 font-bold block mt-0.5"><%= job.department %></span>
-                      <% } %>
+                      <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-[11px] text-slate-400 font-bold block"><%= job.department || 'عام' %></span>
+                        <span class="text-[10px] text-emerald-600 font-bold font-mono">(<%= job.salary || 'تحدد بعد المقابلة' %>)</span>
+                      </div>
                     </div>
                   </div>
 
@@ -189,26 +220,35 @@
                 </div>
               </div>
 
+              <!-- أزرار الإجراءات للوظيفة -->
               <div class="flex items-center gap-2 pt-3.5 border-t border-slate-100">
                 <button 
                   type="button" 
                   onclick='openApplicantsModal(<%- JSON.stringify(job).replace(/'/g, "&apos;") %>)'
-                  class="flex-1 py-2.5 px-3 rounded-xl bg-slate-50 hover:bg-[#ffd000] border border-slate-200 hover:border-[#ffd000] text-slate-700 hover:text-[#0a122c] font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                  class="flex-1 py-2 px-3 rounded-xl bg-slate-50 hover:bg-[#ffd000] border border-slate-200 hover:border-[#ffd000] text-slate-700 hover:text-[#0a122c] font-bold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                 >
                   <span class="material-symbols-outlined text-base">visibility</span>
-                  <span>عرض التقديمات</span>
+                  <span>التقديمات</span>
                 </button>
 
+                <!-- قفل / فتح التقديم -->
                 <form action="/admin/jobs/toggle-status" method="POST" class="m-0 shrink-0">
                   <input type="hidden" name="jobId" value="<%= job._id %>">
                   <input type="hidden" name="status" value="<%= job.status === 'open' ? 'closed' : 'open' %>">
                   <button 
                     type="submit" 
-                    class="py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border <%= job.status === 'open' ? 'bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-rose-200 hover:border-rose-600' : 'bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border-emerald-200 hover:border-emerald-600' %>"
+                    class="py-2 px-3 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border <%= job.status === 'open' ? 'bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border-rose-200 hover:border-rose-600' : 'bg-emerald-50 hover:bg-emerald-600 text-emerald-700 hover:text-white border-emerald-200 hover:border-emerald-600' %>"
                     title="<%= job.status === 'open' ? 'إغلاق التقديم' : 'فتح التقديم للجميع' %>"
                   >
                     <span class="material-symbols-outlined text-base"><%= job.status === 'open' ? 'lock' : 'lock_open' %></span>
                     <span><%= job.status === 'open' ? 'إغلاق' : 'فتح' %></span>
+                  </button>
+                </form>
+
+                <!-- حذف الوظيفة بالكامل -->
+                <form action="/admin/jobs/delete/<%= job._id %>" method="POST" class="m-0 shrink-0" onsubmit="return confirm('هل أنت متأكد من حذف هذه الوظيفة وجميع طلباتها؟')">
+                  <button type="submit" class="trash-btn-circle" title="حذف الوظيفة نهائياً">
+                    <span class="material-symbols-outlined">delete</span>
                   </button>
                 </form>
               </div>
@@ -229,6 +269,79 @@
     </div>
   </main>
 
+  <!-- ==================== مودال إنشاء وظيفة جديدة ==================== -->
+  <div class="admin-modal" id="createJobModal" onclick="if(event.target===this) closeCreateJobModal()">
+    <div class="modal-card max-w-xl flex flex-col max-h-[90vh]">
+      <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">post_add</span>
+          </div>
+          <div>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900 m-0">نشر شاغر وظيفي جديد</h3>
+            <span class="text-xs text-slate-400 block mt-0.5">ستظهر في صفحة /jobs ليتمكن الجميع من التقديم</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeCreateJobModal()" class="text-slate-400 hover:text-slate-600 border-none bg-transparent cursor-pointer flex items-center">
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+
+      <form action="/admin/jobs/create" method="POST" class="space-y-4 overflow-y-auto custom-inner-scroll flex-1 pr-1 pl-1">
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">مسمى الوظيفة <span class="text-rose-500">*</span></label>
+          <input type="text" name="title" required placeholder="مثال: مبرمج بوتات ديسكورد / مشرف مجتمع" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-semibold outline-none focus:bg-white focus:border-blue-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">القسم</label>
+            <input type="text" name="department" placeholder="مثال: الإدارة / التطوير" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:bg-white focus:border-blue-500">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">الأيقونة (Material Icon)</label>
+            <input type="text" name="icon" value="work" placeholder="مثال: terminal, security, support" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-mono outline-none focus:bg-white focus:border-blue-500" dir="ltr">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">المقابل / الراتب</label>
+            <input type="text" name="salary" placeholder="مثال: نسبة من المبيعات / رصيد فيلو" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:bg-white focus:border-blue-500">
+          </div>
+          <div>
+            <label class="text-xs font-bold text-slate-700 block mb-1">حالة التقديم</label>
+            <select name="status" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-bold outline-none cursor-pointer">
+              <option value="open">مفتوحة فوراً</option>
+              <option value="closed">مغلقة مؤقتاً</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">المتطلبات والشروط (كل شرط بسطر)</label>
+          <textarea name="requirements" rows="3" placeholder="خبرة سابقة بإدارة المجتمعات&#10;الالتزام والتواجد اليومي" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:bg-white focus:border-blue-500 leading-relaxed"></textarea>
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-slate-700 block mb-1">الوصف العام والمهام</label>
+          <textarea name="description" rows="3" required placeholder="اشرح طبيعة العمل والدور المطلوب بالتفصيل..." class="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm outline-none focus:bg-white focus:border-blue-500 leading-relaxed"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 flex items-center gap-3">
+          <button type="submit" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm cursor-pointer border-none flex items-center justify-center gap-1.5 transition-colors">
+            <span class="material-symbols-outlined text-base">cloud_upload</span>
+            <span>نشر الوظيفة الآن</span>
+          </button>
+          <button type="button" onclick="closeCreateJobModal()" class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer transition-colors">
+            إلغاء
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== مودال المتقدمين ==================== -->
   <div class="admin-modal" id="applicantsModal" onclick="if(event.target===this) closeApplicantsModal()">
     <div class="modal-card max-w-2xl flex flex-col max-h-[85vh]">
       
@@ -264,6 +377,7 @@
   <script src="/js/script.js"></script>
   <script>
     const appModal = document.getElementById('applicantsModal');
+    const createModal = document.getElementById('createJobModal');
     const modalHeading = document.getElementById('modalJobHeading');
     const modalSub = document.getElementById('modalJobSub');
     const modalIcon = document.getElementById('modalJobIcon');
@@ -274,6 +388,14 @@
     const gridContainer = document.getElementById('jobsGridContainer');
     const noResultsBox = document.getElementById('noJobSearchResults');
     const countEl = document.getElementById('jobVisibleCount');
+
+    function openCreateJobModal() {
+      if (createModal) createModal.classList.add('show');
+    }
+
+    function closeCreateJobModal() {
+      if (createModal) createModal.classList.remove('show');
+    }
 
     function openApplicantsModal(job) {
       modalHeading.textContent = `${job.title}`;
@@ -300,7 +422,6 @@
           const dt = new Date(app.appliedAt);
           const dateStr = `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
 
-          // قراءة البيانات بمرونة تدعم كافة التسميات القديمة والجديدة
           const candidateName = app.fullName || app.applicantName || app.username || 'متقدم';
           const candidateAge = (app.age !== undefined && app.age !== null && app.age !== '') ? app.age : (app.applicantAge || '-');
 
@@ -358,8 +479,8 @@
                   <input type="hidden" name="jobId" value="${job._id}">
                   <input type="hidden" name="appId" value="${app._id}">
                   <input type="hidden" name="action" value="delete">
-                  <button type="submit" class="p-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold flex items-center justify-center cursor-pointer border border-rose-200 transition-colors" title="حذف التقديم">
-                    <span class="material-symbols-outlined text-base">delete</span>
+                  <button type="submit" class="trash-btn-circle" title="حذف التقديم">
+                    <span class="material-symbols-outlined">delete</span>
                   </button>
                 </form>
               </div>

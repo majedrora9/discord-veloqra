@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - شحن رصيد فيلو</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffd000'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+
+    .step-circle {
+      width: 36px;
+      height: 36px;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .payment-card {
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 0.85rem;
+    }
+    .payment-card:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -4px rgba(10, 18, 44, 0.05);
+    }
+    .payment-card.selected {
+      border-color: #0a122c !important;
+      background-color: #f8fafc !important;
+      box-shadow: 0 0 0 2px #0a122c;
+    }
+
+    .timer-badge {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 1px;
+    }
+
+    #appToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      padding: 0.85rem 1.5rem;
+      border-radius: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #appToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="loading-active bg-slate-50/50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <!-- نظام Toast -->
+  <div id="appToast" class="flex items-center gap-2.5 shadow-2xl border">
+    <span class="material-symbols-outlined text-lg" id="toastIcon">check_circle</span>
+    <span id="toastMsg">تمت العملية بنجاح</span>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+    <%- include('partials/header') %>
+  </header>
+
+  <main class="w-full relative flex-1 py-10 md:py-14">
+    <div class="max-w-xl mx-auto px-4 sm:px-6">
+
+      <!-- ترويسة الصفحة -->
+      <div class="text-center mb-8">
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center justify-center gap-2">
+          <span>شحن محفظتك الشخصية</span>
+        </h1>
+        <p class="text-slate-500 text-xs sm:text-sm mt-1.5">
+          حدد وسيلة الدفع واكتب الكمية التي ترغب بشحنها
+        </p>
+      </div>
+
+      <!-- مؤشر الخطوات -->
+      <div class="flex items-center justify-center gap-3 mb-8">
+        <div id="stepIndicator1" class="step-circle bg-[#0a122c] text-white shadow-sm">1</div>
+        <div id="stepLine" class="flex-1 max-w-[130px] h-1 rounded-full bg-slate-200 transition-colors"></div>
+        <div id="stepIndicator2" class="step-circle bg-slate-200 text-slate-500">2</div>
+      </div>
+
+      <!-- البطاقة الرئيسية -->
+      <div class="bg-white border border-slate-200/90 rounded-[2rem] p-6 sm:p-8 shadow-sm">
+
+        <!-- ================= الخطوة الأولى ================= -->
+        <div id="step1Content" class="space-y-6">
+          
+          <div>
+            <label class="text-xs font-black text-slate-700 block mb-2.5">1. اختر وسيلة الدفع:</label>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              
+              <div onclick="selectPaymentMethod('syp_sham')" id="opt_syp_sham" class="payment-card text-center flex flex-col items-center justify-center gap-1.5">
+                <img src="/syp_sham.png" onerror="this.src='/logo.png'" class="w-7 h-7 rounded-full object-contain">
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">شام كاش</strong>
+                  <span class="text-[10px] text-slate-400 font-bold block">ليرة سورية</span>
+                </div>
+              </div>
+
+              <div onclick="selectPaymentMethod('syp_paymera')" id="opt_syp_paymera" class="payment-card text-center flex flex-col items-center justify-center gap-1.5">
+                <img src="/syp_paymera.png" onerror="this.src='/logo.png'" class="w-7 h-7 rounded-full object-contain">
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">بايميرا</strong>
+                  <span class="text-[10px] text-slate-400 font-bold block">ليرة سورية</span>
+                </div>
+              </div>
+
+              <div onclick="selectPaymentMethod('syp_cash')" id="opt_syp_cash" class="payment-card text-center flex flex-col items-center justify-center gap-1.5">
+                <div class="w-7 h-7 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-base">payments</span>
+                </div>
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">كاش نقدي</strong>
+                  <span class="text-[10px] text-slate-400 font-bold block">ليرة سورية</span>
+                </div>
+              </div>
+
+              <div onclick="selectPaymentMethod('iqd_asiacell')" id="opt_iqd_asiacell" class="payment-card text-center flex flex-col items-center justify-center gap-1.5">
+                <img src="/iqd_asiacell.png" onerror="this.src='/logo.png'" class="w-7 h-7 rounded-full object-contain">
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">آسيا سيل</strong>
+                  <span class="text-[10px] text-slate-400 font-bold block">دينار عراقي</span>
+                </div>
+              </div>
+
+              <div onclick="selectPaymentMethod('usd_sham')" id="opt_usd_sham" class="payment-card text-center flex flex-col items-center justify-center gap-1.5">
+                <img src="/usd_sham.png" onerror="this.src='/logo.png'" class="w-7 h-7 rounded-full object-contain">
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">شام كاش</strong>
+                  <span class="text-[10px] text-slate-400 font-bold block">دولار أمريكي</span>
+                </div>
+              </div>
+
+              <!-- USDT BEP20 -->
+              <div onclick="selectPaymentMethod('crypto_usdt')" id="opt_crypto_usdt" class="payment-card text-center flex flex-col items-center justify-center gap-1.5 border-teal-200 bg-teal-50/30">
+                <div class="w-7 h-7 rounded-full bg-teal-50 border border-teal-200 text-teal-600 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-base">currency_bitcoin</span>
+                </div>
+                <div>
+                  <strong class="text-xs font-black text-slate-800 block">USDT (BEP20)</strong>
+                  <span class="text-[10px] text-teal-600 font-bold block">شحن فوري</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-black text-slate-700 block mb-1.5">2. اكتب كمية الفيلو كوين المطلوبة:</label>
+            <div class="relative">
+              <input 
+                type="number" 
+                id="coinAmountInput" 
+                min="100" 
+                step="1"
+                value="100"
+                placeholder="أدخل الكمية التي تريدها..." 
+                class="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm font-bold focus:bg-white focus:outline-none focus:border-blue-500 transition-colors"
+                oninput="calculateTotal()"
+              >
+              <div class="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1.5 pointer-events-none">
+                <span class="text-xs font-bold text-slate-400">Coin</span>
+                <img src="/velo_coin.png" onerror="this.src='/logo.png'" class="w-4 h-4 rounded-full object-contain">
+              </div>
+            </div>
+
+            <div class="flex items-center gap-1.5 flex-wrap mt-2.5">
+              <span class="text-[11px] text-slate-400 font-bold ml-1">كميات سريعة:</span>
+              <button type="button" onclick="setCoinAmount(100)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">100</button>
+              <button type="button" onclick="setCoinAmount(250)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">250</button>
+              <button type="button" onclick="setCoinAmount(500)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">500</button>
+              <button type="button" onclick="setCoinAmount(1000)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">1,000</button>
+              <button type="button" onclick="setCoinAmount(2500)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">2,500</button>
+              <button type="button" onclick="setCoinAmount(5000)" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition-colors cursor-pointer">5,000</button>
+            </div>
+            <span class="text-[11px] text-slate-400 mt-1.5 block">الحد الأدنى للشحن هو 100 فيلو كوين (1 USDT)</span>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+            <span class="text-slate-500 font-bold">المبلغ الإجمالي المستحق:</span>
+            <div class="flex items-center gap-2 text-left font-mono font-black text-sm text-[#0a122c]">
+              <span id="finalCostDisplay">150 ل.س</span>
+              <div id="selectedCurrencyIconSlot" class="shrink-0"></div>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            id="btnGoStep2" 
+            onclick="goToStep2()" 
+            class="w-full py-3.5 px-5 rounded-xl bg-[#0a122c] hover:bg-blue-600 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer border-none shadow-2xs"
+          >
+            <span>التالي: تفاصيل التحويل</span>
+            <span class="material-symbols-outlined text-base">arrow_back</span>
+          </button>
+
+        </div>
+
+        <!-- ================= الخطوة الثانية ================= -->
+        <div id="step2Content" class="hidden space-y-6">
+
+          <div class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 flex items-center justify-between">
+            <div class="flex items-center gap-2 text-rose-800 text-xs font-bold">
+              <span class="material-symbols-outlined text-rose-600 text-lg">timer</span>
+              <span>يجب إتمام التحويل قبل انتهاء المهلة</span>
+            </div>
+            <span id="countdownTimer" class="timer-badge font-bold text-sm text-rose-700 font-mono">20:00</span>
+          </div>
+
+          <div class="p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200 text-center space-y-3">
+            
+            <!-- شام كاش -->
+            <div id="details_sham" class="hidden space-y-2.5">
+              <div class="flex items-center justify-center gap-2">
+                <img src="/syp_sham.png" onerror="this.src='/logo.png'" class="w-6 h-6 rounded-full object-contain">
+                <span class="text-xs font-bold text-slate-700 block">امسح رمز QR الخاص بشام كاش لإتمام الدفع:</span>
+              </div>
+              <img src="/qr_shamcash.png" alt="QR شام كاش" class="w-64 max-h-80 mx-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm object-contain" onerror="this.src='/logo.png'">
+            </div>
+
+            <!-- بايميرا -->
+            <div id="details_paymera" class="hidden space-y-2.5">
+              <div class="flex items-center justify-center gap-2">
+                <img src="/syp_paymera.png" onerror="this.src='/logo.png'" class="w-6 h-6 rounded-full object-contain">
+                <span class="text-xs font-bold text-slate-700 block">امسح رمز QR الخاص بحساب بايميرا:</span>
+              </div>
+              <img src="/qr_paymera.png" alt="QR بايميرا" class="w-64 max-h-80 mx-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm object-contain" onerror="this.src='/logo.png'">
+            </div>
+
+            <!-- آسيا سيل -->
+            <div id="details_asiacell" class="hidden space-y-2">
+              <div class="flex items-center justify-center gap-2">
+                <img src="/iqd_asiacell.png" onerror="this.src='/logo.png'" class="w-6 h-6 rounded-full object-contain">
+                <span class="text-xs font-bold text-slate-700 block">حوّل الرصيد المطلوب للرقم التالي:</span>
+              </div>
+              <div class="p-3 rounded-xl bg-white border border-slate-200 font-mono font-black text-lg text-slate-900 select-all" dir="ltr">
+                07716055373
+              </div>
+              <span class="text-[11px] text-slate-400 block">أو عبر الرمز الدولي: +9647716055373</span>
+            </div>
+
+            <!-- نقدي -->
+            <div id="details_cash" class="hidden space-y-1.5">
+              <span class="text-xs font-bold text-slate-800 block">الدفع النقدي (كاش):</span>
+              <p class="text-xs text-slate-500 leading-relaxed">
+                يرجى كتابة رقم هاتفك أو اسمك في المربع بالأسفل لتنسيق التسليم المباشر عبر الإدارة
+              </p>
+            </div>
+
+            <!-- USDT BEP20 الثابت -->
+            <div id="details_crypto" class="hidden space-y-3.5 text-right">
+              <div class="p-3 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between text-xs">
+                <span class="font-bold text-teal-900">المبلغ المطلوب تحويله بالظبط:</span>
+                <span id="cryptoRequiredAmount" class="font-mono font-black text-teal-800 text-sm" dir="ltr">1.00 USDT</span>
+              </div>
+
+              <!-- صورة QR الثابتة التي ترفعها بنفسك -->
+              <div class="text-center space-y-2">
+                <span class="text-xs font-bold text-slate-700 block">امسح رمز QR لعنوان المحفظة (BEP20):</span>
+                <img id="cryptoQrImg" src="/qr_usdt.png" alt="USDT BEP20 QR" class="w-60 max-h-72 mx-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-sm object-contain" onerror="this.src='/logo.png'">
+              </div>
+
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1">عنوان المحفظة (شبكة BNB Smart Chain - BEP20):</label>
+                <div class="flex items-center gap-1.5">
+                  <input type="text" id="cryptoAddressDisplay" readonly class="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-slate-800 font-mono text-[11px] font-bold outline-none select-all" dir="ltr">
+                  <button type="button" onclick="copyCryptoAddress()" class="px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors shrink-0">نسخ</button>
+                </div>
+                <span class="text-[10px] text-rose-500 font-bold block mt-1">تنبيه: حوّل عبر شبكة BEP20 حصراً لتجنب ضياع الأموال!</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- نموذج تأكيد الحوالات اليدوية العادية -->
+          <form id="chargeOrderForm" onsubmit="submitChargeOrder(event)" class="space-y-4">
+            <div>
+              <label class="text-xs font-bold text-slate-700 block mb-1.5">
+                رقم الحوالة أو إشعار العملية (بدون رمز #): <span class="text-rose-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="transferCodeInput" 
+                placeholder="مثال: 9482710482" 
+                dir="ltr"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm font-bold focus:bg-white focus:outline-none focus:border-blue-500 transition-colors"
+              >
+            </div>
+
+            <div class="flex items-center gap-2.5 pt-2">
+              <button 
+                type="submit" 
+                id="btnSubmitOrder"
+                class="flex-1 py-3 px-5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-2xs"
+              >
+                <span class="material-symbols-outlined text-base">check_circle</span>
+                <span>تأكيد عملية التحويل</span>
+              </button>
+
+              <button 
+                type="button" 
+                onclick="backToStep1()" 
+                class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
+              >
+                رجوع
+              </button>
+            </div>
+          </form>
+
+          <!-- نموذج التحقق التلقائي لـ USDT BEP20 -->
+          <div id="cryptoVerifySection" class="hidden space-y-4 pt-2 border-t border-slate-200/80">
+            <div>
+              <label class="text-xs font-bold text-slate-800 block mb-1.5">
+                رمز المعاملة (TxID / Transaction Hash) بعد إتمام التحويل: <span class="text-rose-500">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="cryptoTxHashInput" 
+                placeholder="ألصق الـ TxID هنا من محفظتك (Trust Wallet / Binance / إلخ)" 
+                dir="ltr"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs font-bold focus:bg-white focus:outline-none focus:border-teal-500 transition-colors"
+              >
+            </div>
+
+            <div class="flex items-center gap-2.5">
+              <button 
+                type="button" 
+                id="btnVerifyCryptoAuto"
+                onclick="verifyCryptoDepositAuto()" 
+                class="flex-1 py-3 px-5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 cursor-pointer border-none shadow-2xs"
+              >
+                <span class="material-symbols-outlined text-base">sync</span>
+                <span>تحقق واشحن حسابي تلقائياً</span>
+              </button>
+
+              <button 
+                type="button" 
+                onclick="backToStep1()" 
+                class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200"
+              >
+                رجوع
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================= رسالة النجاح ================= -->
+        <div id="successState" class="hidden text-center py-8 space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto border border-emerald-100">
+            <span class="material-symbols-outlined text-3xl">verified</span>
+          </div>
+          <h3 class="text-base font-black text-slate-900" id="successTitle">تم إرسال طلبك بنجاح</h3>
+          <p class="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto" id="successDesc">
+           طلبك قيد التدقيق بواسطة الإدارة، ستتم عملية الشحن فوراً
+          </p>
+          <div class="pt-3">
+            <a href="/profile" class="inline-block py-2.5 px-6 rounded-xl bg-[#0a122c] hover:bg-slate-800 text-white text-xs font-bold no-underline shadow-2xs">
+              الانتقال إلى بروفايلك
+            </a>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <%- include('partials/footer') %>
+
+  <script src="/js/script.js"></script>
+  <script>
+    // =========================================================
+    // ضع عنوان محفظتك الثابت من BingX هنا بين علامتي التنصيص
+    // =========================================================
+    const STATIC_USDT_BEP20_ADDRESS = "0xYourActualBingxDepositAddressHere";
+
+    let selectedMethod = 'syp_sham';
+    let timerInterval = null;
+    let timeLeft = 20 * 60;
+
+    const ICONS_MAP = {
+      'syp_sham': '<img src="/syp_sham.png" onerror="this.src=\'/logo.png\'" class="w-4 h-4 rounded-full object-contain">',
+      'syp_paymera': '<img src="/syp_paymera.png" onerror="this.src=\'/logo.png\'" class="w-4 h-4 rounded-full object-contain">',
+      'syp_cash': '<span class="material-symbols-outlined text-emerald-600 text-sm">payments</span>',
+      'iqd_asiacell': '<img src="/iqd_asiacell.png" onerror="this.src=\'/logo.png\'" class="w-4 h-4 rounded-full object-contain">',
+      'usd_sham': '<img src="/usd_sham.png" onerror="this.src=\'/logo.png\'" class="w-4 h-4 rounded-full object-contain">',
+      'crypto_usdt': '<span class="material-symbols-outlined text-teal-600 text-sm">currency_bitcoin</span>'
+    };
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById('appToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      if (isSuccess) {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700 show';
+        toastIcon.textContent = 'check_circle';
+        toastIcon.className = 'material-symbols-outlined text-lg text-[#ffd000]';
+      } else {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-rose-950 text-white border-rose-800 show';
+        toastIcon.textContent = 'error';
+        toastIcon.className = 'material-symbols-outlined text-lg text-rose-400';
+      }
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function calculateTotal() {
+      const amount = parseFloat(document.getElementById('coinAmountInput').value) || 0;
+      const display = document.getElementById('finalCostDisplay');
+      const iconSlot = document.getElementById('selectedCurrencyIconSlot');
+
+      if (!selectedMethod || amount <= 0) {
+        display.textContent = '0.00';
+        iconSlot.innerHTML = '';
+        return 0;
+      }
+
+      let cost = 0;
+      let currencyLabel = '';
+
+      if (selectedMethod.startsWith('syp_')) {
+        cost = (amount / 100) * 150;
+        currencyLabel = 'ل.س';
+      } else if (selectedMethod === 'iqd_asiacell') {
+        cost = (amount / 100) * 1400;
+        currencyLabel = 'د.ع';
+      } else if (selectedMethod === 'usd_sham') {
+        cost = (amount / 100) * 1;
+        currencyLabel = '$';
+      } else if (selectedMethod === 'crypto_usdt') {
+        cost = (amount / 100) * 1;
+        currencyLabel = 'USDT';
+      }
+
+      display.textContent = `${cost.toLocaleString()} ${currencyLabel}`;
+      iconSlot.innerHTML = ICONS_MAP[selectedMethod] || '';
+      return cost;
+    }
+
+    function setCoinAmount(val) {
+      document.getElementById('coinAmountInput').value = val;
+      calculateTotal();
+    }
+
+    function selectPaymentMethod(method) {
+      selectedMethod = method;
+      document.querySelectorAll('.payment-card').forEach(el => el.classList.remove('selected'));
+      const card = document.getElementById('opt_' + method);
+      if (card) card.classList.add('selected');
+      calculateTotal();
+    }
+
+    selectPaymentMethod('syp_sham');
+
+    // الانتقال المباشر والفوري للخطوة 2 بدون أي انتظار
+    function goToStep2() {
+      const amount = parseFloat(document.getElementById('coinAmountInput').value) || 0;
+      if (amount < 100) {
+        return showToast('الحد الأدنى للشحن هو 100 فيلو كوين (1 USDT)', false);
+      }
+
+      document.getElementById('details_sham').classList.add('hidden');
+      document.getElementById('details_paymera').classList.add('hidden');
+      document.getElementById('details_asiacell').classList.add('hidden');
+      document.getElementById('details_cash').classList.add('hidden');
+      document.getElementById('details_crypto').classList.add('hidden');
+
+      const regularForm = document.getElementById('chargeOrderForm');
+      const cryptoSection = document.getElementById('cryptoVerifySection');
+
+      if (selectedMethod === 'crypto_usdt') {
+        regularForm.classList.add('hidden');
+        cryptoSection.classList.remove('hidden');
+        document.getElementById('details_crypto').classList.remove('hidden');
+
+        const usdtAmount = (amount / 100).toFixed(2);
+        document.getElementById('cryptoRequiredAmount').textContent = `${usdtAmount} USDT`;
+
+        // تعبئة العنوان الثابت فوراً
+        document.getElementById('cryptoAddressDisplay').value = STATIC_USDT_BEP20_ADDRESS;
+      } else {
+        regularForm.classList.remove('hidden');
+        cryptoSection.classList.add('hidden');
+
+        if (selectedMethod === 'syp_sham' || selectedMethod === 'usd_sham') {
+          document.getElementById('details_sham').classList.remove('hidden');
+        } else if (selectedMethod === 'syp_paymera') {
+          document.getElementById('details_paymera').classList.remove('hidden');
+        } else if (selectedMethod === 'iqd_asiacell') {
+          document.getElementById('details_asiacell').classList.remove('hidden');
+        } else if (selectedMethod === 'syp_cash') {
+          document.getElementById('details_cash').classList.remove('hidden');
+        }
+      }
+
+      document.getElementById('step1Content').classList.add('hidden');
+      document.getElementById('step2Content').classList.remove('hidden');
+
+      document.getElementById('stepLine').classList.replace('bg-slate-200', 'bg-[#0a122c]');
+      document.getElementById('stepIndicator2').className = 'step-circle bg-[#0a122c] text-white shadow-sm';
+
+      startTimer();
+    }
+
+    function copyCryptoAddress() {
+      const addr = document.getElementById('cryptoAddressDisplay').value;
+      if (!addr) return;
+      navigator.clipboard.writeText(addr).then(() => {
+        showToast('تم نسخ عنوان المحفظة (BEP20) بنجاح!');
+      });
+    }
+
+    function backToStep1() {
+      document.getElementById('step2Content').classList.add('hidden');
+      document.getElementById('step1Content').classList.remove('hidden');
+
+      document.getElementById('stepLine').classList.replace('bg-[#0a122c]', 'bg-slate-200');
+      document.getElementById('stepIndicator2').className = 'step-circle bg-slate-200 text-slate-500';
+
+      clearInterval(timerInterval);
+      timeLeft = 20 * 60;
+    }
+
+    function startTimer() {
+      clearInterval(timerInterval);
+      const timerDisplay = document.getElementById('countdownTimer');
+
+      timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+          clearInterval(timerInterval);
+          showToast('انتهت مهلة الدفع المحددة! يرجى إعادة تقديم الطلب.', false);
+          backToStep1();
+          return;
+        }
+
+        timeLeft--;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        timerDisplay.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // إرسال الحوالات العادية
+    async function submitChargeOrder(e) {
+      e.preventDefault();
+      const transferCode = document.getElementById('transferCodeInput').value.replace(/#/g, '').trim();
+      const amount = parseFloat(document.getElementById('coinAmountInput').value) || 0;
+
+      if (!transferCode) {
+        return showToast('يرجى إدخال رقم الحوالة', false);
+      }
+
+      const btn = document.getElementById('btnSubmitOrder');
+      btn.disabled = true;
+      btn.innerHTML = 'جاري الإرسال...';
+
+      try {
+        const res = await fetch('/charge/submit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            coins: amount,
+            method: selectedMethod,
+            transferCode: transferCode
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          clearInterval(timerInterval);
+          document.getElementById('step2Content').classList.add('hidden');
+          document.getElementById('successState').classList.remove('hidden');
+          showToast('تم إرسال طلب الشحن بنجاح!');
+        } else {
+          showToast(data.message || 'حدث خطأ أثناء حفظ الطلب', false);
+          btn.disabled = false;
+          btn.innerHTML = 'تأكيد عملية التحويل';
+        }
+      } catch (err) {
+        showToast('تعذر الاتصال بالسيرفر، تأكد من اتصالك بالإنترنت', false);
+        btn.disabled = false;
+        btn.innerHTML = 'تأكيد عملية التحويل';
+      }
+    }
+
+    // فحص وشحن الكريبتو التلقائي بالـ API بعد إدخال الـ TxID
+    async function verifyCryptoDepositAuto() {
+      const txId = document.getElementById('cryptoTxHashInput').value.trim();
+      const amount = parseFloat(document.getElementById('coinAmountInput').value) || 0;
+
+      if (!txId) {
+        return showToast('يرجى لصق رمز المعاملة (TxID) للتأكد والشحن', false);
+      }
+
+      const btn = document.getElementById('btnVerifyCryptoAuto');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-base animate-spin">sync</span><span>جاري الفحص في محفظة BingX...</span>';
+
+      try {
+        const res = await fetch('/api/charge/crypto/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ txId: txId, expectedCoins: amount })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          clearInterval(timerInterval);
+          document.getElementById('step2Content').classList.add('hidden');
+          document.getElementById('successTitle').textContent = 'تم شحن رصيد فيلو كوين إلى محفظتك بنجاح!';
+          document.getElementById('successDesc').textContent = data.message;
+          document.getElementById('successState').classList.remove('hidden');
+          showToast(data.message, true);
+        } else {
+          showToast(data.message || 'فشل التحقق من الإيداع', false);
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-symbols-outlined text-base">sync</span><span>تحقق واشحن حسابي تلقائياً</span>';
+        }
+      } catch (err) {
+        showToast('تعذر الاتصال بالخادم، يرجى المحاولة بعد لحظات', false);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-base">sync</span><span>تحقق واشحن حسابي تلقائياً</span>';
+      }
+    }
+  </script>
+</body>
+</html>

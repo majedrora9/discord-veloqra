@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - إدارة المحافظ والرصيد</title>
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffd000'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    .clean-box {
+      background: #ffffff;
+      border: 1px solid #eef2f6;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(10, 18, 44, 0.04);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .clean-box:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 12px 24px -6px rgba(10, 18, 44, 0.05);
+    }
+    .action-pill {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .trash-btn-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 9999px;
+      background-color: #fee2e2;
+      color: #ef4444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      border: 1px solid #fecaca;
+      cursor: pointer;
+    }
+    .trash-btn-circle:hover {
+      background-color: #fecaca;
+      color: #dc2626;
+      transform: scale(1.08);
+    }
+    #appToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      padding: 0.85rem 1.5rem;
+      border-radius: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #appToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="loading-active bg-slate-50/50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white"><div class="simple-spinner"></div></div>
+
+  <!-- حاوية Toast -->
+  <div id="appToast" class="flex items-center gap-2.5 shadow-2xl border">
+    <span class="material-symbols-outlined text-lg" id="toastIcon">check_circle</span>
+    <span id="toastMsg">تمت العملية بنجاح</span>
+  </div>
+
+  <%- include('partials/header', { isSubPage: true, pageTitle: 'إدارة المحافظ' }) %>
+
+  <main class="w-full relative flex-1 py-8 md:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
+
+      <!-- ترويسة الصفحة مع شريط الإحصائيات -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span class="w-2.5 h-7 rounded-full bg-amber-500 inline-block"></span>
+            <span>إدارة المحافظ والرصيد</span>
+          </h1>
+          <p class="text-slate-500 text-xs sm:text-sm mt-1">
+            التحكم بأرصدة محافظ الأعضاء وإيداع أو خصم مبالغ Velo Coin مباشرة عبر الآيدي
+          </p>
+        </div>
+
+        <% 
+          const walletsList = wallets || [];
+          const totalWalletsCount = walletsList.length;
+          const totalBalanceSum = walletsList.reduce((acc, curr) => acc + (Number(curr.balance) || 0), 0);
+        %>
+
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+          <div class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2">
+            <span class="text-[11px] font-bold text-slate-500">إجمالي المحافظ:</span>
+            <span class="font-mono font-black text-xs text-slate-900" id="totalWalletsCount"><%= totalWalletsCount %></span>
+          </div>
+          <div class="px-3.5 py-2 rounded-xl bg-amber-50/80 border border-amber-200/80 shadow-2xs flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span class="text-[11px] font-bold text-amber-900">إجمالي الأرصدة:</span>
+            <span class="font-mono font-black text-xs text-amber-900" dir="ltr" id="totalBalanceSum"><%= totalBalanceSum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>$</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- 1. نموذج تعديل الرصيد -->
+        <div class="lg:col-span-4">
+          <div class="clean-box space-y-5 sticky top-6">
+            <div class="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200/70 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-xl">payments</span>
+              </div>
+              <div>
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900">تعديل رصيد عضو</h3>
+                <span class="text-[11px] text-slate-400 font-medium block">إدخال الآيدي والمبلغ مباشرة</span>
+              </div>
+            </div>
+
+            <form id="walletUpdateForm" onsubmit="handleWalletSubmit(event)" class="space-y-4">
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1.5">ديسكورد آيدي (Discord ID) <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <span class="material-symbols-outlined text-slate-400 text-base absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">badge</span>
+                  <input 
+                    type="text" 
+                    name="discordId" 
+                    id="targetDiscordId" 
+                    required 
+                    placeholder="مثال: 691044838459834430"
+                    class="w-full pr-10 pl-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-mono font-bold focus:bg-white focus:outline-none focus:border-blue-500 transition-colors"
+                    dir="ltr"
+                  >
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1.5">نوع الإجراء</label>
+                <div class="grid grid-cols-3 gap-2">
+                  <label class="action-pill flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-200 text-center has-[:checked]:bg-[#0a122c] has-[:checked]:border-[#0a122c] has-[:checked]:text-white">
+                    <input type="radio" name="actionType" value="add" checked class="hidden">
+                    <span class="material-symbols-outlined text-base">add</span>
+                    <span class="text-[11px] font-bold mt-0.5">إضافة (+)</span>
+                  </label>
+
+                  <label class="action-pill flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-200 text-center has-[:checked]:bg-rose-600 has-[:checked]:border-rose-600 has-[:checked]:text-white">
+                    <input type="radio" name="actionType" value="subtract" class="hidden">
+                    <span class="material-symbols-outlined text-base">remove</span>
+                    <span class="text-[11px] font-bold mt-0.5">خصم (-)</span>
+                  </label>
+
+                  <label class="action-pill flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50 border border-slate-200 text-center has-[:checked]:bg-blue-600 has-[:checked]:border-blue-600 has-[:checked]:text-white">
+                    <input type="radio" name="actionType" value="set" class="hidden">
+                    <span class="material-symbols-outlined text-base">tune</span>
+                    <span class="text-[11px] font-bold mt-0.5">تعيين (=)</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs font-bold text-slate-700 block mb-1.5">الكمية / المبلغ ($) <span class="text-rose-500">*</span></label>
+                <div class="relative">
+                  <input 
+                    type="number" 
+                    id="amountInput"
+                    name="amount" 
+                    step="0.01" 
+                    min="0" 
+                    required 
+                    placeholder="0.00" 
+                    class="w-full pr-3.5 pl-9 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-mono font-bold focus:bg-white focus:outline-none focus:border-blue-500 transition-colors" 
+                    dir="ltr"
+                  >
+                  <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono font-black text-xs pointer-events-none">$</span>
+                </div>
+                <span class="text-[10px] text-slate-400 block mt-1">يدعم الفواصل العشرية (مثال: 5.50 أو 100)</span>
+              </div>
+
+              <button type="submit" id="btnSubmitWallet" class="w-full py-3 px-4 rounded-xl bg-[#0a122c] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-colors cursor-pointer border-none flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-base">check_circle</span>
+                <span>تطبيق العملية فوراً</span>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- 2. جدول سجل المحافظ -->
+        <div class="lg:col-span-8">
+          <div class="clean-box space-y-4">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-slate-400">account_balance_wallet</span>
+                <h3 class="text-sm sm:text-base font-extrabold text-slate-900">سجل أرصدة الأعضاء</h3>
+              </div>
+
+              <div class="relative w-full sm:w-64">
+                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">search</span>
+                <input 
+                  type="text" 
+                  id="walletSearchInput" 
+                  oninput="filterWalletsTable()" 
+                  placeholder="بحث باسم العضو أو الآيدي..." 
+                  class="w-full pr-8 pl-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs outline-none focus:bg-white focus:border-blue-500 transition-colors"
+                >
+              </div>
+            </div>
+
+            <!-- جدول المحافظ -->
+            <div class="overflow-x-auto rounded-2xl border border-slate-200/90 bg-white">
+              <table class="w-full text-right text-xs" id="walletsTable">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold">
+                  <tr>
+                    <th class="py-3 px-4">العضو</th>
+                    <th class="py-3 px-4 text-center">الرصيد المتاح</th>
+                    <th class="py-3 px-4 text-left">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100" id="walletsTableBody">
+                  <% if (walletsList && walletsList.length > 0) { %>
+                    <% walletsList.forEach(w => { %>
+                      <tr id="wallet-row-<%= w.discordId %>" class="wallet-row hover:bg-slate-50/80 transition-colors" data-search="<%= (w.username || '').toLowerCase() %> <%= w.discordId %>">
+                        <td class="py-3 px-4">
+                          <div class="flex items-center gap-2.5">
+                            <img src="<%= w.avatar || '/logo.png' %>" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
+                            <div class="min-w-0">
+                              <span class="font-extrabold text-slate-900 block truncate user-name-label">@<%= w.username %></span>
+                              <span class="font-mono text-[10px] text-slate-400 block" dir="ltr"><%= w.discordId %></span>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="py-3 px-4 text-center">
+                          <span id="balance-badge-<%= w.discordId %>" class="inline-flex items-center px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200/80 text-amber-900 font-mono font-black text-xs" dir="ltr">
+                            <%= Number(w.balance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>$
+                          </span>
+                        </td>
+                        <td class="py-3 px-4 text-left">
+                          <div class="flex items-center justify-end gap-1.5">
+                            <button 
+                              type="button" 
+                              onclick="selectForEdit('<%= w.discordId %>')"
+                              class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#0a122c] text-slate-700 hover:text-white border border-slate-200 text-[11px] font-bold transition-all cursor-pointer"
+                            >
+                              تحديد
+                            </button>
+                            <button 
+                              type="button" 
+                              onclick="confirmDeleteWallet('<%= w.discordId %>')"
+                              class="trash-btn-circle"
+                              title="تصفير الرصيد وحذف المحفظة"
+                            >
+                              <span class="material-symbols-outlined text-base">delete</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } else { %>
+                    <tr id="emptyWalletsRow">
+                      <td colspan="3" class="text-center py-12 text-slate-400 font-medium">
+                        <span class="material-symbols-outlined text-3xl block mb-1 text-slate-300">account_balance_wallet</span>
+                        <span>لا توجد محافظ مسجلة حتى الآن</span>
+                      </td>
+                    </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- مودال تأكيد تصفير وحذف المحفظة -->
+  <div id="deleteWalletModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
+    <div class="bg-white border border-slate-200 rounded-[2rem] max-w-sm w-full p-6 text-center shadow-2xl relative space-y-4">
+      <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+        <span class="material-symbols-outlined text-3xl">money_off</span>
+      </div>
+      <div>
+        <h4 class="text-base font-black text-slate-900">تصفير الرصيد وحذف المحفظة</h4>
+        <p class="text-xs text-slate-500 mt-1" id="deleteWalletPrompt">هل أنت متأكد؟ سيتم تصفير الرصيد وإزالة العضو من السجل.</p>
+      </div>
+      <div class="flex items-center gap-2.5 pt-2">
+        <button type="button" id="confirmDeleteWalletBtn" onclick="executeDeleteWallet()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer border-none shadow-sm">تأكيد التصفير والحذف</button>
+        <button type="button" onclick="closeDeleteWalletModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+  <script src="/js/script.js"></script>
+  <script>
+    let deletingWalletId = null;
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById('appToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      if (isSuccess) {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700 show';
+        toastIcon.textContent = 'check_circle';
+        toastIcon.className = 'material-symbols-outlined text-lg text-[#ffd000]';
+      } else {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-rose-950 text-white border-rose-800 show';
+        toastIcon.textContent = 'error';
+        toastIcon.className = 'material-symbols-outlined text-lg text-rose-400';
+      }
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    function selectForEdit(discordId) {
+      const input = document.getElementById('targetDiscordId');
+      if (input) {
+        input.value = discordId;
+        input.focus();
+        window.scrollTo({ top: input.offsetTop - 100, behavior: 'smooth' });
+      }
+    }
+
+    function filterWalletsTable() {
+      const q = (document.getElementById('walletSearchInput').value || '').toLowerCase().trim();
+      const rows = document.querySelectorAll('.wallet-row');
+      rows.forEach(r => {
+        const text = r.getAttribute('data-search') || '';
+        r.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    async function handleWalletSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const discordId = document.getElementById('targetDiscordId').value.trim();
+      const amount = document.getElementById('amountInput').value.trim();
+      const actionType = form.querySelector('input[name="actionType"]:checked')?.value || 'add';
+
+      const btn = document.getElementById('btnSubmitWallet');
+      btn.disabled = true;
+      btn.innerHTML = `<span class="material-symbols-outlined text-base animate-spin">sync</span><span>جاري التحقق والتحديث...</span>`;
+
+      try {
+        const res = await fetch('/admin/wallets/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordId, amount, actionType })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message, true);
+          document.getElementById('amountInput').value = '';
+          
+          const badge = document.getElementById(`balance-badge-${data.discordId}`);
+          if (badge) {
+            badge.textContent = `${Number(data.newBalance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}$`;
+          } else {
+            setTimeout(() => window.location.reload(), 1000);
+          }
+        } else {
+          showToast(data.message, false);
+        }
+      } catch (err) {
+        showToast('تعذر الاتصال بالخادم، يرجى المحاولة لاحقاً', false);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span class="material-symbols-outlined text-base">check_circle</span><span>تطبيق العملية فوراً</span>`;
+      }
+    }
+
+    function confirmDeleteWallet(discordId) {
+      deletingWalletId = discordId;
+      const row = document.getElementById(`wallet-row-${discordId}`);
+      const userName = row ? (row.querySelector('.user-name-label')?.textContent || discordId) : discordId;
+      
+      const promptEl = document.getElementById('deleteWalletPrompt');
+      if (promptEl) {
+        promptEl.innerHTML = `هل أنت متأكد من تصفير محفظة <strong>${userName}</strong> (${discordId}) وحذفها من القائمة؟`;
+      }
+      const modal = document.getElementById('deleteWalletModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDeleteWalletModal() {
+      deletingWalletId = null;
+      const modal = document.getElementById('deleteWalletModal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function executeDeleteWallet() {
+      if (!deletingWalletId) return;
+      const btn = document.getElementById('confirmDeleteWalletBtn');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/admin/wallets/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ discordId: deletingWalletId })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast(data.message, true);
+          const row = document.getElementById(`wallet-row-${deletingWalletId}`);
+          if (row) {
+            row.style.opacity = '0';
+            row.style.transform = 'scale(0.95)';
+            setTimeout(() => row.remove(), 250);
+          }
+          closeDeleteWalletModal();
+        } else {
+          showToast(data.message, false);
+        }
+      } catch (err) {
+        showToast('فشل في إزالة المحفظة، يرجى المحاولة لاحقاً', false);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>

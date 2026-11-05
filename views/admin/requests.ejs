@@ -31,272 +31,717 @@
   </script>
   <link rel="stylesheet" href="/css/main.css">
   <style>
-    .req-card {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
-      border-radius: 1.5rem;
-      padding: 1.5rem;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 1.25rem;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .req-card:hover {
-      border-color: #cbd5e1;
-      transform: translateY(-3px);
-      box-shadow: 0 14px 28px -8px rgba(10, 18, 44, 0.07);
+    .filter-tab {
+      transition: all 0.2s ease;
     }
     .filter-tab.active {
-      background-color: #0a122c;
-      color: #ffffff;
-      border-color: #0a122c;
+      background-color: #0a122c !important;
+      color: #ffffff !important;
+      border-color: #0a122c !important;
+    }
+    .filter-tab.active span.count-badge {
+      background: rgba(255, 255, 255, 0.2) !important;
+      color: #ffffff !important;
+      border-color: transparent !important;
+    }
+
+    #appToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      padding: 0.85rem 1.5rem;
+      border-radius: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #appToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
   </style>
 </head>
-<body class="loading-active bg-white text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
+<body class="loading-active bg-slate-50/50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
 
-  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white"><div class="simple-spinner"></div></div>
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center"><div class="simple-spinner"></div></div>
+
+  <!-- نظام الـ Toast -->
+  <div id="appToast" class="flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700">
+    <span class="material-symbols-outlined text-lg text-[#ffd000]" id="toastIcon">check_circle</span>
+    <span id="toastMsg">تمت العملية بنجاح</span>
+  </div>
 
   <%- include('partials/header', { isSubPage: true, pageTitle: 'إدارة الطلبات' }) %>
 
-  <main class="w-full relative flex-1 bg-white py-10 md:py-14">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+  <main class="w-full relative flex-1 py-8 md:py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
 
-      <div class="text-center max-w-2xl mx-auto mb-10">
-        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
-          إدارة الطلبات
-        </h1>
-        <p class="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
-          متابعة طلبات المشاريع والأنظمة الجديدة بجانب إعلانات البائعين
-        </p>
+      <!-- ترويسة الصفحة -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2.5">
+            <span class="w-2.5 h-7 rounded-full bg-blue-600 inline-block"></span>
+            <span>إدارة الطلبات والشحن</span>
+          </h1>
+          <p class="text-slate-500 text-xs sm:text-sm mt-1">
+            متابعة وتدقيق طلبات شحن المحافظ، صفقات المتجر، وإعلانات البائعين
+          </p>
+        </div>
+
+        <% 
+          const storeOrdersList = storeOrders || [];
+          const storeOrdersCount = storeOrdersList.length;
+          
+          const allOrders = customOrders || [];
+          const chargeOrdersList = allOrders.filter(o => (o.siteName && o.siteName.includes('شحن')) || (o.plan && o.plan.includes('VeloCoin')));
+          const realProjectsList = allOrders.filter(o => !chargeOrdersList.includes(o));
+          
+          const chargeCount = chargeOrdersList.length;
+          const projectsCount = realProjectsList.length;
+          const adsCount = (pendingAds || []).length + (approvedAds || []).length;
+          const totalCount = storeOrdersCount + chargeCount + projectsCount + adsCount;
+        %>
+
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
+          <div class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 shadow-2xs flex items-center gap-2">
+            <span class="text-[11px] font-bold text-slate-500">إجمالي الطلبات:</span>
+            <span class="font-mono font-black text-xs text-slate-900"><%= totalCount %></span>
+          </div>
+        </div>
       </div>
 
-      <div class="mb-8 p-4 sm:p-5 rounded-2xl bg-slate-50/80 border border-slate-200/90 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+      <!-- فلترة وبحث -->
+      <div class="mb-6 p-3 rounded-2xl bg-white border border-slate-200 shadow-2xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
         
         <div class="relative flex-1">
-          <span class="material-symbols-outlined text-slate-400 text-xl absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+          <span class="material-symbols-outlined text-slate-400 text-lg absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
           <input 
             type="text" 
             id="searchInput" 
-            placeholder="بحث باسم المشروع، هاتف العميل، أو البائع..."
-            class="w-full pr-11 pl-10 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-[#0a122c] focus:outline-none text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 transition-colors shadow-sm"
+            placeholder="بحث برقم الحوالة، اسم العميل، المعرف، أو التفاصيل..."
+            class="w-full pr-10 pl-9 py-2.5 rounded-xl bg-slate-50/70 border border-transparent focus:border-blue-500 focus:bg-white focus:outline-none text-xs sm:text-sm font-medium text-slate-800 placeholder:text-slate-400 transition-all"
           >
           <button type="button" id="clearSearchBtn" class="hidden absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
-            <span class="material-symbols-outlined text-lg">close</span>
+            <span class="material-symbols-outlined text-base">close</span>
           </button>
         </div>
 
         <div class="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0 shrink-0">
-          <button type="button" onclick="setSectionFilter('all')" id="tab-all" class="filter-tab active px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap">
+          <button type="button" onclick="setSectionFilter('all')" id="tab-all" class="filter-tab active px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
             <span>الكل</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-white/20 font-mono text-[11px]"><%= (customOrders || []).length + (pendingAds || []).length + (approvedAds || []).length %></span>
+            <span class="count-badge px-1.5 py-0.2 rounded-md bg-white border border-slate-200 font-mono text-[10px]"><%= totalCount %></span>
           </button>
 
-          <button type="button" onclick="setSectionFilter('project_orders')" id="tab-project_orders" class="filter-tab px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-blue-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-blue-600"></span>
-            <span>طلبات المشاريع</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[11px]"><%= (customOrders || []).length %></span>
+          <button type="button" onclick="setSectionFilter('charge_orders')" id="tab-charge_orders" class="filter-tab px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-amber-100/60 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+            <span>شحن رصيد</span>
+            <span class="count-badge px-1.5 py-0.2 rounded-md bg-amber-50 text-amber-700 border border-amber-200 font-mono text-[10px]"><%= chargeCount %></span>
           </button>
 
-          <button type="button" onclick="setSectionFilter('seller_ads')" id="tab-seller_ads" class="filter-tab px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-amber-400 text-xs font-bold transition-all flex items-center gap-2 cursor-pointer whitespace-nowrap">
-            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-            <span>إعلانات البائعين</span>
-            <span class="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 font-mono text-[11px]"><%= (pendingAds || []).length + (approvedAds || []).length %></span>
+          <button type="button" onclick="setSectionFilter('store_orders')" id="tab-store_orders" class="filter-tab px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-blue-100/60 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+            <span>المتجر</span>
+            <span class="count-badge px-1.5 py-0.2 rounded-md bg-blue-50 text-blue-700 border border-blue-200 font-mono text-[10px]"><%= storeOrdersCount %></span>
+          </button>
+
+          <button type="button" onclick="setSectionFilter('seller_ads')" id="tab-seller_ads" class="filter-tab px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-purple-100/60 text-slate-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer whitespace-nowrap">
+            <span>الإعلانات</span>
+            <span class="count-badge px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200 font-mono text-[10px]"><%= adsCount %></span>
           </button>
         </div>
 
       </div>
 
-      <div class="space-y-6">
+      <!-- جدول الطلبات الرئيسي والموحد -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-2xs overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-right border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold">
+                <th class="py-3.5 px-4 whitespace-nowrap">النوع / المعرف</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">المشتري (العميل)</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">البائع</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">المحتوى / الباقة</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">المبلغ والعملة</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">الحالة</th>
+                <th class="py-3.5 px-4 whitespace-nowrap">التاريخ</th>
+                <th class="py-3.5 px-4 text-center whitespace-nowrap">إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="requestsTableBody" class="divide-y divide-slate-100 font-medium">
 
-        <div id="requestsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <!-- 1. صفوف طلبات شحن الرصيد -->
+              <% chargeOrdersList.forEach(order => { %>
+                <% 
+                  let contact = String(order.clientContact || '').trim();
+                  let desc = String(order.description || '').trim();
+                  let transferNumber = '';
 
-          <!-- كروت طلبات المشاريع المحدثة مع كامل التفاصيل -->
-          <% (customOrders || []).forEach(order => { %>
-            <div class="req-card searchable-item" data-type="project_orders" data-search="<%= order.siteName + ' ' + order.clientContact + ' ' + order.description %>">
-              <div>
-                <div class="flex items-center justify-between gap-3 pb-3.5 mb-4 border-b border-slate-100">
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-                      <span class="material-symbols-outlined text-xl">rocket_launch</span>
-                    </div>
-                    <div class="min-w-0">
-                      <strong class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate"><%= order.siteName %></strong>
-                      <a href="https://wa.me/<%= order.clientContact.replace(/[^0-9]/g, '') %>" target="_blank" class="text-[11px] font-mono text-emerald-600 hover:underline block truncate" dir="ltr">
-                        <%= order.clientContact %>
-                      </a>
-                    </div>
-                  </div>
+                  if (contact) {
+                    transferNumber = contact
+                      .replace(/^حوالة\s*:\s*/i, '')
+                      .replace(/^TXID\s*:\s*/i, '')
+                      .replace(/^رقم الحوالة\s*:\s*/i, '')
+                      .trim();
+                  }
 
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold <%= order.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200' %>">
-                    <span><%= order.status === 'approved' ? 'مقبول' : 'طلب جديد' %></span>
-                  </span>
-                </div>
+                  if (!transferNumber || transferNumber === 'غير متوفر') {
+                    const match = desc.match(/(?:الحوالة|المعاملة|العملية|TXID|رقم الحوالة)\s*[:=]\s*([A-Za-z0-9_-]+)/i);
+                    if (match) {
+                      transferNumber = match[1].trim();
+                    } else {
+                      const numbersOnly = desc.match(/\b\d{6,}\b/);
+                      if (numbersOnly) transferNumber = numbersOnly[0];
+                    }
+                  }
 
-                <p class="text-xs text-slate-600 leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-100 line-clamp-3 mb-3">
-                  <%= order.description %>
-                </p>
+                  if (!transferNumber) transferNumber = order.serverId || 'معاملة مسجلة';
 
-                <!-- تفاصيل النطاق والخدمات السحابية الشاملة -->
-                <div class="space-y-1.5 mb-3">
-                  <div class="flex flex-wrap gap-1.5">
-                    <span class="px-2 py-0.5 rounded-md bg-slate-100 border text-[10px] font-bold">النمط: <%= order.colorTheme %></span>
-                    
-                    <% if (order.addons && order.addons.server) { %>
-                      <span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold">سيرفر خاص</span>
-                    <% } %>
+                  let coinsAmount = '100';
+                  if (order.plan && order.plan.includes('VeloCoin_')) {
+                    coinsAmount = order.plan.replace('VeloCoin_', '');
+                  } else if (order.siteName && order.siteName.match(/\d+/)) {
+                    coinsAmount = order.siteName.match(/\d+/)[0];
+                  }
 
-                    <% if (order.addons && order.addons.subdomain && order.addons.subdomain.selected) { %>
-                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold font-mono" dir="ltr">
-                        <%= order.addons.subdomain.name %>.veloqra.xyz
-                      </span>
-                    <% } %>
-
-                    <% if (order.addons && order.addons.customDomain && order.addons.customDomain.selected) { %>
-                      <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold font-mono" dir="ltr">
-                        <%= order.addons.customDomain.name %><%= order.addons.customDomain.ext %>
-                      </span>
-                    <% } %>
-                  </div>
-
-                  <!-- تفاصيل البريد والتحويل -->
-                  <% if (order.addons && order.addons.email && order.addons.email.selected) { %>
-                    <div class="p-2 rounded-lg bg-slate-50 border border-slate-100 text-[11px] font-mono space-y-0.5" dir="ltr">
-                      <div class="text-blue-700 font-bold truncate">
-                        Mail: <%= order.addons.email.fullEmail || (order.addons.email.inbox + '@domain') %>
-                      </div>
-                      <div class="text-slate-400 text-[10px] truncate">
-                        -> <%= order.addons.email.destinationEmail %>
-                      </div>
-                    </div>
-                  <% } %>
-                </div>
-
-                <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-[11px] flex items-center justify-between">
-                  <span class="text-slate-500 font-bold">التكلفة السحابية:</span>
-                  <span class="font-mono font-extrabold text-blue-600 text-sm"><%= order.estimatedTotal %> $ / شهر</span>
-                </div>
-              </div>
-
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <span class="text-[10px] font-mono text-slate-400" dir="ltr">
-                  <%= new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
-                </span>
-
-                <div class="flex items-center gap-1.5">
-                  <form action="/admin/orders/action" method="POST" class="m-0">
-                    <input type="hidden" name="orderId" value="<%= order._id %>">
-                    <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 text-xs font-bold transition-colors cursor-pointer">
-                      قبول
-                    </button>
-                  </form>
-
-                  <form action="/admin/orders/action" method="POST" class="m-0" onsubmit="return confirm('حذف طلب هذا المشروع نهائياً؟')">
-                    <input type="hidden" name="orderId" value="<%= order._id %>">
-                    <input type="hidden" name="action" value="delete">
-                    <button type="submit" class="px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 text-xs font-bold transition-colors cursor-pointer">
-                      حذف
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          <% }) %>
-
-          <!-- إعلانات البائعين المعلقة -->
-          <% (pendingAds || []).forEach(item => { %>
-            <div class="req-card searchable-item" data-type="seller_ads" data-search="<%= (item.sellerName || '') + ' ' + (item.sellerDiscordId || '') + ' ' + (item.ad.title || '') + ' ' + (item.ad.description || '') %>">
-              <div>
-                <div class="flex items-center justify-between gap-3 pb-3.5 mb-4 border-b border-slate-100">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <img src="<%= item.sellerAvatar || '/logo.png' %>" class="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
-                    <div class="min-w-0">
-                      <strong class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate"><%= item.sellerName %></strong>
-                      <span class="text-[11px] font-mono text-slate-400 block truncate" dir="ltr">ID: <%= item.sellerDiscordId %></span>
-                    </div>
-                  </div>
+                  const rawCurrencyStr = `${order.currency || ''} ${order.paymentMethod || ''} ${order.price || ''} ${desc} ${order.siteName || ''}`.toLowerCase();
                   
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    <span>إعلان بائع</span>
-                  </span>
-                </div>
+                  let currencyIcon = '/syp_sham.png';
+                  let currencyName = 'شام كاش';
 
-                <h3 class="text-base font-extrabold text-slate-900 mb-2 tracking-tight"><%= item.ad.title %></h3>
-                <p class="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50/80 p-3.5 rounded-xl border border-slate-100 line-clamp-3"><%= item.ad.description %></p>
-              </div>
+                  if (rawCurrencyStr.includes('paymera') || rawCurrencyStr.includes('بايميرا')) {
+                    currencyIcon = '/syp_paymera.png';
+                    currencyName = 'بايميرا';
+                  } else if (rawCurrencyStr.includes('asiacell') || rawCurrencyStr.includes('آسيا') || rawCurrencyStr.includes('د.ع') || rawCurrencyStr.includes('iqd')) {
+                    currencyIcon = '/iqd_asiacell.png';
+                    currencyName = 'آسيا سيل (د.ع)';
+                  } else if (rawCurrencyStr.includes('usdt') || rawCurrencyStr.includes('bep20') || rawCurrencyStr.includes('crypto')) {
+                    currencyIcon = 'currency_bitcoin';
+                    currencyName = 'USDT (BEP20)';
+                  } else if (rawCurrencyStr.includes('كاش') || rawCurrencyStr.includes('نقدي')) {
+                    currencyIcon = 'payments';
+                    currencyName = 'كاش نقدي';
+                  } else if (rawCurrencyStr.includes('$') || rawCurrencyStr.includes('usd')) {
+                    currencyIcon = '/usd_sham.png';
+                    currencyName = 'دولار ($)';
+                  }
 
-              <div class="pt-3.5 border-t border-slate-100 flex items-center justify-between gap-2">
-                <span class="font-mono text-xs font-extrabold text-slate-900"><%= item.ad.price %>$</span>
+                  const isApproved = order.status === 'approved';
+                  const formattedDate = new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-                <div class="flex items-center gap-2">
-                  <form action="/admin/requests/action" method="POST" class="m-0">
-                    <input type="hidden" name="sellerId" value="<%= item.sellerId %>">
-                    <input type="hidden" name="adId" value="<%= item.ad._id %>">
-                    <input type="hidden" name="action" value="approve">
-                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-600 text-emerald-600 hover:text-white border border-emerald-200 text-xs font-bold transition-all cursor-pointer">
-                      قبول
-                    </button>
-                  </form>
+                  const detailData = {
+                    type: 'شحن رصيد VeloCoin',
+                    id: String(order._id || ''),
+                    buyerName: order.userName ? '@' + order.userName : 'عضو فيلوكرا',
+                    buyerId: String(order.userId || 'غير مسجل'),
+                    sellerName: 'منصة فيلوكرا (تلقائي)',
+                    sellerId: 'System',
+                    details: `${Number(coinsAmount).toLocaleString()} VeloCoin`,
+                    price: String(order.price || ((order.estimatedTotal || 0) + ' $')),
+                    currency: currencyName,
+                    status: isApproved ? 'معتمد' : 'قيد الانتظار',
+                    date: formattedDate,
+                    notes: `رقم الحوالة: ${transferNumber}\n${desc || ''}`
+                  };
+                %>
+                <tr class="searchable-item hover:bg-slate-50/80 transition-colors" data-category="charge_orders" data-status="<%= order.status %>" data-search="<%= (order.userName || 'عضو') + ' ' + (order.userId || '') + ' ' + transferNumber + ' ' + coinsAmount + ' ' + (order.price || '') + ' ' + currencyName %>">
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[11px] font-bold block w-fit">
+                      شحن رصيد
+                    </span>
+                    <span class="font-mono text-[10px] text-slate-400 mt-0.5 block truncate max-w-[110px]" dir="ltr">
+                      #<%= String(order._id).slice(-6) %>
+                    </span>
+                  </td>
 
-                  <form action="/admin/requests/action" method="POST" class="m-0">
-                    <input type="hidden" name="sellerId" value="<%= item.sellerId %>">
-                    <input type="hidden" name="adId" value="<%= item.ad._id %>">
-                    <input type="hidden" name="action" value="reject">
-                    <button type="submit" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 text-xs font-bold transition-all cursor-pointer">
-                      رفض
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          <% }) %>
-
-          <!-- الإعلانات المقبولة -->
-          <% (approvedAds || []).forEach(item => { %>
-            <div class="req-card searchable-item" data-type="seller_ads" data-search="<%= (item.sellerName || '') + ' ' + (item.sellerDiscordId || '') + ' ' + (item.ad.title || '') + ' ' + (item.ad.description || '') %>">
-              <div>
-                <div class="flex items-center justify-between gap-3 pb-3.5 mb-4 border-b border-slate-100">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <img src="<%= item.sellerAvatar || '/logo.png' %>" class="w-10 h-10 rounded-xl object-cover border border-slate-200 bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
-                    <div class="min-w-0">
-                      <strong class="text-xs sm:text-sm font-extrabold text-slate-900 block truncate"><%= item.sellerName %></strong>
-                      <span class="text-[11px] font-mono text-slate-400 block truncate" dir="ltr">ID: <%= item.sellerDiscordId %></span>
+                  <!-- المشتري -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <img src="<%= order.userAvatar || '/logo.png' %>" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
+                      <div class="min-w-0">
+                        <strong class="text-xs font-bold text-slate-900 block truncate">
+                          <%= order.userName ? '@' + order.userName : 'عضو فيلوكرا' %>
+                        </strong>
+                        <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">
+                          <%= order.userId || 'غير مسجل' %>
+                        </span>
+                      </div>
                     </div>
-                  </div>
+                  </td>
 
-                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <span>إعلان منشور</span>
-                  </span>
-                </div>
+                  <!-- البائع -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <img src="/logo.png" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0">
+                      <div class="min-w-0">
+                        <strong class="text-xs font-bold text-slate-900 block truncate">فيلوكرا</strong>
+                        <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">النظام</span>
+                      </div>
+                    </div>
+                  </td>
 
-                <h3 class="text-base font-extrabold text-slate-900 mb-2 tracking-tight"><%= item.ad.title %></h3>
-                <p class="text-xs text-slate-600 leading-relaxed bg-slate-50/80 p-3 rounded-xl border border-slate-100 line-clamp-3"><%= item.ad.description %></p>
-              </div>
+                  <!-- المحتوى والباقة -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-1.5 font-bold text-amber-900">
+                      <img src="/velo_coin.png" onerror="this.src='/logo.png'" class="w-3.5 h-3.5 object-contain">
+                      <span><%= Number(coinsAmount).toLocaleString() %> Coin</span>
+                    </div>
+                    <div class="text-[10px] text-slate-500 font-mono mt-0.5 truncate max-w-[180px]">
+                      حوالة: <span class="font-bold text-slate-800 select-all"><%= transferNumber %></span>
+                    </div>
+                  </td>
 
-              <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <span class="font-mono text-xs font-extrabold text-slate-900"><%= item.ad.price %> Coin</span>
+                  <!-- المبلغ والعملة -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="font-mono font-bold text-slate-900 text-xs">
+                      <%= order.price || ((order.estimatedTotal || 0) + ' $') %>
+                    </div>
+                    <div class="flex items-center gap-1.5 text-[10px] text-slate-600 font-bold mt-0.5">
+                      <% if (currencyIcon.includes('/')) { %>
+                        <img src="<%= currencyIcon %>" onerror="this.src='/logo.png'" class="w-3.5 h-3.5 rounded-full object-contain shrink-0">
+                      <% } else { %>
+                        <span class="material-symbols-outlined text-[13px] text-emerald-600"><%= currencyIcon %></span>
+                      <% } %>
+                      <span><%= currencyName %></span>
+                    </div>
+                  </td>
 
-                <form action="/admin/requests/action" method="POST" class="m-0 shrink-0">
-                  <input type="hidden" name="sellerId" value="<%= item.sellerId %>">
-                  <input type="hidden" name="adId" value="<%= item.ad._id %>">
-                  <input type="hidden" name="action" value="delete">
-                  <button type="submit" class="px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200 text-xs font-bold transition-all cursor-pointer">
-                    حذف
-                  </button>
-                </form>
-              </div>
-            </div>
-          <% }) %>
+                  <!-- الحالة -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <%= isApproved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' %>">
+                      <%= isApproved ? 'معتمد' : 'قيد الانتظار' %>
+                    </span>
+                  </td>
 
+                  <!-- التاريخ -->
+                  <td class="py-3 px-4 text-[10px] font-mono text-slate-400 whitespace-nowrap" dir="ltr">
+                    <%= formattedDate %>
+                  </td>
+
+                  <!-- أزرار الإجراءات -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex items-center justify-center gap-1">
+                      <!-- زر العين للمودال -->
+                      <button 
+                        type="button" 
+                        data-details="<%- encodeURIComponent(JSON.stringify(detailData)) %>"
+                        onclick="triggerDetailsModal(this)"
+                        class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center transition-colors cursor-pointer"
+                        title="عرض كامل التفاصيل"
+                      >
+                        <span class="material-symbols-outlined text-base">visibility</span>
+                      </button>
+
+                      <!-- زر القبول والاعتماد -->
+                      <% if (!isApproved) { %>
+                        <form action="/admin/orders/action" method="POST" class="m-0">
+                          <input type="hidden" name="orderId" value="<%= order._id %>">
+                          <input type="hidden" name="action" value="approve">
+                          <button type="submit" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors cursor-pointer" title="قبول وشحن">
+                            <span class="material-symbols-outlined text-base">done</span>
+                          </button>
+                        </form>
+                      <% } %>
+
+                      <!-- زر الحذف -->
+                      <button 
+                        type="button" 
+                        onclick="openDeleteModal('/admin/orders/action', '<%= order._id %>', 'طلب شحن بقيمة <%= order.price %>')" 
+                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer" 
+                        title="حذف"
+                      >
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+
+              <!-- 2. صفوف طلبات المتجر المنسقة داخل الجدول تماماً -->
+              <% storeOrdersList.forEach(ord => { %>
+                <% 
+                  const isCompleted = ord.status === 'completed';
+                  const isRejected = ord.status === 'rejected';
+                  const formattedDate = new Date(ord.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                  
+                  let itemsSummary = (ord.items || []).map(i => `${i.title} (x${i.qty || 1}) - ${i.finalPrice} ${i.currency}`).join('\n');
+                  let itemsInline = (ord.items || []).map(i => `${i.title} (x${i.qty || 1})`).join(' ، ');
+
+                  let totalPriceStr = '';
+                  if (ord.currencyTotals) {
+                    const parts = [];
+                    for (const [k, v] of (ord.currencyTotals instanceof Map ? ord.currencyTotals : Object.entries(ord.currencyTotals))) {
+                      parts.push(`${v} ${k}`);
+                    }
+                    totalPriceStr = parts.join(' | ');
+                  }
+                  if (!totalPriceStr) {
+                    totalPriceStr = (ord.items || []).reduce((acc, x) => acc + (x.finalPrice || 0), 0) + ' $';
+                  }
+
+                  const detailData = {
+                    type: 'طلب متجر' + (ord.useMiddleman ? ' (مع وسيط 5%)' : ''),
+                    id: String(ord.orderId || ord._id),
+                    buyerName: '@' + (ord.buyer?.username || 'زائر'),
+                    buyerId: String(ord.buyer?.discordId || 'guest'),
+                    sellerName: '@' + (ord.seller?.username || 'بائع'),
+                    sellerId: String(ord.seller?.discordId || 'غير متوفر'),
+                    details: itemsInline,
+                    price: totalPriceStr,
+                    currency: ord.useMiddleman ? `وساطة: ${ord.middlemanPaymentMethod || 'USD'}` : 'مباشر',
+                    status: isCompleted ? 'مكتمل' : (isRejected ? 'مرفوض' : 'قيد الانتظار'),
+                    date: formattedDate,
+                    notes: `الأصناف المطلوبة:\n${itemsSummary}`
+                  };
+                %>
+                <tr class="searchable-item hover:bg-slate-50/80 transition-colors" data-category="store_orders" data-status="<%= ord.status %>" data-search="<%= (ord.orderId || '') + ' ' + (ord.buyer?.username || '') + ' ' + (ord.buyer?.discordId || '') + ' ' + (ord.seller?.username || '') + ' ' + itemsInline %>">
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex items-center gap-1.5">
+                      <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-800 border border-blue-200 text-[11px] font-bold block w-fit">
+                        متجر
+                      </span>
+                      <% if (ord.useMiddleman) { %>
+                        <span class="px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[9px] font-bold">وسيط</span>
+                      <% } %>
+                    </div>
+                    <span class="font-mono text-[10px] text-slate-400 mt-0.5 block truncate max-w-[110px]" dir="ltr">
+                      #<%= ord.orderId %>
+                    </span>
+                  </td>
+
+                  <!-- المشتري -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <img src="<%= ord.buyer?.avatar || '/logo.png' %>" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
+                      <div class="min-w-0">
+                        <strong class="text-xs font-bold text-slate-900 block truncate">
+                          @<%= ord.buyer?.username || 'زائر' %>
+                        </strong>
+                        <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">
+                          <%= ord.buyer?.discordId || 'guest' %>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- البائع -->
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <img src="<%= ord.seller?.avatar || '/logo.png' %>" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
+                      <div class="min-w-0">
+                        <strong class="text-xs font-bold text-slate-900 block truncate">
+                          @<%= ord.seller?.username || 'بائع' %>
+                        </strong>
+                        <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">
+                          <%= ord.seller?.discordId || 'غير متوفر' %>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <!-- المحتوى والأصناف -->
+                  <td class="py-3 px-4 max-w-[200px]">
+                    <div class="text-xs font-bold text-slate-900 truncate" title="<%= itemsInline %>">
+                      <%= itemsInline %>
+                    </div>
+                    <span class="text-[10px] text-slate-400 block mt-0.5">عدد الأصناف: <%= (ord.items || []).length %></span>
+                  </td>
+
+                  <!-- المبلغ والعملة -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="font-mono font-bold text-slate-900 text-xs">
+                      <%= totalPriceStr %>
+                    </div>
+                    <% if (ord.useMiddleman) { %>
+                      <div class="text-[10px] text-amber-700 font-bold mt-0.5">عمولة: +<%= ord.middlemanFee %></div>
+                    <% } %>
+                  </td>
+
+                  <!-- الحالة -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold <%= isCompleted ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (isRejected ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-blue-50 text-blue-700 border border-blue-200') %>">
+                      <%= isCompleted ? 'مكتمل' : (isRejected ? 'مرفوض' : 'قيد الانتظار') %>
+                    </span>
+                  </td>
+
+                  <!-- التاريخ -->
+                  <td class="py-3 px-4 text-[10px] font-mono text-slate-400 whitespace-nowrap" dir="ltr">
+                    <%= formattedDate %>
+                  </td>
+
+                  <!-- الإجراءات (أيقونات فقط) -->
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex items-center justify-center gap-1">
+                      <!-- زر العين -->
+                      <button 
+                        type="button" 
+                        data-details="<%- encodeURIComponent(JSON.stringify(detailData)) %>"
+                        onclick="triggerDetailsModal(this)"
+                        class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center transition-colors cursor-pointer"
+                        title="عرض كامل التفاصيل"
+                      >
+                        <span class="material-symbols-outlined text-base">visibility</span>
+                      </button>
+
+                      <!-- زر إتمام -->
+                      <% if (!isCompleted) { %>
+                        <form action="/admin/store-orders/action" method="POST" class="m-0">
+                          <input type="hidden" name="orderId" value="<%= ord._id %>">
+                          <input type="hidden" name="action" value="complete">
+                          <button type="submit" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors cursor-pointer" title="إتمام الطلب">
+                            <span class="material-symbols-outlined text-base">done</span>
+                          </button>
+                        </form>
+                      <% } %>
+
+                      <!-- زر الرفض -->
+                      <% if (ord.status === 'pending') { %>
+                        <form action="/admin/store-orders/action" method="POST" class="m-0">
+                          <input type="hidden" name="orderId" value="<%= ord._id %>">
+                          <input type="hidden" name="action" value="reject">
+                          <button type="submit" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer" title="رفض الطلب">
+                            <span class="material-symbols-outlined text-base">close</span>
+                          </button>
+                        </form>
+                      <% } %>
+
+                      <!-- زر الحذف -->
+                      <button 
+                        type="button" 
+                        onclick="openDeleteModal('/admin/store-orders/action', '<%= ord._id %>', 'طلب المتجر #<%= ord.orderId %>')" 
+                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer" 
+                        title="حذف"
+                      >
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+
+              <!-- 3. صفوف إعلانات البائعين -->
+              <% [...(pendingAds || []), ...(approvedAds || [])].forEach(item => { %>
+                <% 
+                  const isAdApproved = item.ad?.status === 'approved';
+                  const formattedDate = item.ad?.createdAt ? new Date(item.ad.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
+
+                  const detailData = {
+                    type: 'إعلان بائع',
+                    id: String(item.ad?._id || ''),
+                    buyerName: 'عام / منصة المتجر',
+                    buyerId: 'Public',
+                    sellerName: '@' + (item.sellerName || 'بائع'),
+                    sellerId: String(item.sellerId || 'غير متوفر'),
+                    details: item.ad?.title || '',
+                    price: `${item.ad?.price || 0} $`,
+                    currency: 'دولار ($)',
+                    status: isAdApproved ? 'معتمد' : 'معلق للمراجعة',
+                    date: formattedDate,
+                    notes: item.ad?.description || 'لا يوجد وصف'
+                  };
+                %>
+                <tr class="searchable-item hover:bg-slate-50/80 transition-colors" data-category="seller_ads" data-status="<%= item.ad?.status %>" data-search="<%= (item.sellerName || '') + ' ' + (item.ad?.title || '') %>">
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-800 border border-purple-200 text-[11px] font-bold block w-fit">
+                      إعلان
+                    </span>
+                  </td>
+
+                  <td class="py-3 px-4">
+                    <span class="text-xs text-slate-400 font-bold block">عرض عام بالمتجر</span>
+                  </td>
+
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-2.5">
+                      <img src="<%= item.sellerAvatar || '/logo.png' %>" class="w-8 h-8 rounded-full border border-slate-200 object-cover bg-slate-50 shrink-0" onerror="this.src='/logo.png'">
+                      <div class="min-w-0">
+                        <strong class="text-xs font-bold text-slate-900 block truncate">
+                          @<%= item.sellerName || 'بائع' %>
+                        </strong>
+                        <span class="text-[10px] font-mono text-slate-400 block truncate" dir="ltr">
+                          <%= item.sellerId || 'غير متوفر' %>
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="py-3 px-4 max-w-[200px]">
+                    <div class="text-xs font-bold text-slate-800 truncate"><%= item.ad?.title %></div>
+                    <div class="text-[11px] text-slate-500 truncate mt-0.5"><%= item.ad?.description %></div>
+                  </td>
+
+                  <td class="py-3 px-4 whitespace-nowrap font-mono font-bold text-slate-900">
+                    <div><%= item.ad?.price %>$</div>
+                    <div class="text-[10px] text-slate-500 font-sans">دولار أمريكي</div>
+                  </td>
+
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold <%= isAdApproved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-purple-50 text-purple-700 border border-purple-200' %>">
+                      <%= isAdApproved ? 'معتمد' : 'معلق' %>
+                    </span>
+                  </td>
+
+                  <td class="py-3 px-4 text-[10px] font-mono text-slate-400 whitespace-nowrap" dir="ltr">
+                    <%= formattedDate %>
+                  </td>
+
+                  <td class="py-3 px-4 whitespace-nowrap">
+                    <div class="flex items-center justify-center gap-1">
+                      <button 
+                        type="button" 
+                        data-details="<%- encodeURIComponent(JSON.stringify(detailData)) %>"
+                        onclick="triggerDetailsModal(this)"
+                        class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-600 flex items-center justify-center transition-colors cursor-pointer"
+                        title="عرض كامل التفاصيل"
+                      >
+                        <span class="material-symbols-outlined text-base">visibility</span>
+                      </button>
+
+                      <% if (!isAdApproved) { %>
+                        <form action="/admin/requests/action" method="POST" class="m-0">
+                          <input type="hidden" name="adId" value="<%= item.ad?._id %>">
+                          <input type="hidden" name="sellerId" value="<%= item.sellerId %>">
+                          <input type="hidden" name="action" value="approve">
+                          <button type="submit" class="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-600 flex items-center justify-center transition-colors cursor-pointer" title="اعتماد الإعلان">
+                            <span class="material-symbols-outlined text-base">done</span>
+                          </button>
+                        </form>
+                      <% } %>
+
+                      <button 
+                        type="button" 
+                        onclick="openDeleteModal('/admin/requests/action', '<%= item.ad?._id %>', 'إعلان: <%= item.ad?.title %>', '<%= item.sellerId %>')" 
+                        class="w-8 h-8 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors cursor-pointer" 
+                        title="حذف"
+                      >
+                        <span class="material-symbols-outlined text-base">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              <% }) %>
+
+            </tbody>
+          </table>
         </div>
 
+        <!-- حالة عدم وجود بيانات -->
+        <div id="noResultsState" class="hidden py-14 text-center">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3">
+            <span class="material-symbols-outlined text-2xl">inbox</span>
+          </div>
+          <h3 class="text-sm font-extrabold text-slate-800">لا توجد طلبات مطابقة للبحث أو التصنيف</h3>
+        </div>
       </div>
 
     </div>
   </main>
+
+  <!-- مودال عرض كامل التفاصيل (Details Modal) -->
+  <div id="detailsModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0a122c]/65 backdrop-blur-xs p-4 transition-all">
+    <div class="w-full max-w-lg bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200 space-y-4">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-xl">info</span>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900" id="modalType">تفاصيل الطلب</h3>
+            <span class="text-[11px] font-mono text-slate-400" id="modalItemId"></span>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeDetailsModal()" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center cursor-pointer">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="grid grid-cols-2 gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100">
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold block mb-0.5">صاحب الطلب / المشتري:</span>
+            <span class="font-bold text-slate-800 block text-xs" id="modalBuyer"></span>
+            <span class="font-mono text-[10px] text-slate-500 block" id="modalBuyerId" dir="ltr"></span>
+          </div>
+          <div class="border-r border-slate-200 pr-3">
+            <span class="text-[10px] text-slate-400 font-bold block mb-0.5">البائع المسؤول:</span>
+            <span class="font-bold text-slate-800 block text-xs" id="modalSeller"></span>
+            <span class="font-mono text-[10px] text-slate-500 block" id="modalSellerId" dir="ltr"></span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-bold">المحتوى / الباقة:</span>
+            <span class="font-bold text-slate-900" id="modalDetails"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-bold">المبلغ / القيمة:</span>
+            <span class="font-mono font-bold text-slate-900" id="modalPrice"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-bold">طريقة الدفع / العملة:</span>
+            <span class="font-bold text-emerald-700" id="modalCurrency"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-bold">حالة الطلب:</span>
+            <span class="font-bold text-slate-800" id="modalStatus"></span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-500 font-bold">تاريخ المعاملة:</span>
+            <span class="font-mono text-slate-700" id="modalDate" dir="ltr"></span>
+          </div>
+        </div>
+
+        <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+          <span class="text-[10px] text-amber-800 font-bold block mb-1">الملاحظات أو الوصف:</span>
+          <p class="text-xs text-amber-950 font-medium whitespace-pre-line" id="modalNotes"></p>
+        </div>
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button type="button" onclick="closeDetailsModal()" class="py-2 px-5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs cursor-pointer">
+          إغلاق
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- مودال تأكيد الحذف (Delete Confirm Modal) -->
+  <div id="deleteConfirmModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0a122c]/65 backdrop-blur-xs p-4 transition-all">
+    <div class="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-center relative animate-in fade-in zoom-in-95 duration-200 space-y-4">
+      
+      <div class="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+        <span class="material-symbols-outlined text-3xl">delete_forever</span>
+      </div>
+
+      <div>
+        <h3 class="text-base font-black text-slate-900">تأكيد حذف العنصر</h3>
+        <p class="text-xs text-slate-500 mt-1" id="deleteModalTargetTitle">هل أنت متأكد من رغبتك بالحذف نهائياً؟</p>
+      </div>
+
+      <form id="deleteModalForm" method="POST" action="" class="m-0">
+        <input type="hidden" name="orderId" id="modalOrderId" value="">
+        <input type="hidden" name="adId" id="modalAdId" value="">
+        <input type="hidden" name="sellerId" id="modalSellerId" value="">
+        <input type="hidden" name="action" value="delete">
+
+        <div class="flex items-center gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-colors cursor-pointer shadow-sm">
+            حذف
+          </button>
+          <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
+            إلغاء
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
 
   <div class="w-full mt-auto">
     <%- include('../partials/footer') %>
@@ -307,28 +752,128 @@
     const searchInput = document.getElementById('searchInput');
     const clearSearchBtn = document.getElementById('clearSearchBtn');
     const searchableItems = document.querySelectorAll('.searchable-item');
-    let currentFilter = 'all';
+    const noResultsState = document.getElementById('noResultsState');
+
+    let currentMainCategory = 'all';
+
+    function showToast(msg, isSuccess = true) {
+      const toast = document.getElementById('appToast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.textContent = msg;
+      if (isSuccess) {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700 show';
+        toastIcon.textContent = 'check_circle';
+        toastIcon.className = 'material-symbols-outlined text-lg text-[#ffd000]';
+      } else {
+        toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-rose-950 text-white border-rose-800 show';
+        toastIcon.textContent = 'error';
+        toastIcon.className = 'material-symbols-outlined text-lg text-rose-400';
+      }
+
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function triggerDetailsModal(buttonEl) {
+      try {
+        const raw = buttonEl.getAttribute('data-details');
+        if (!raw) return;
+        const data = JSON.parse(decodeURIComponent(raw));
+
+        document.getElementById('modalType').textContent = data.type || 'تفاصيل المعاملة';
+        document.getElementById('modalItemId').textContent = '#' + (data.id || '');
+        document.getElementById('modalBuyer').textContent = data.buyerName || '-';
+        document.getElementById('modalBuyerId').textContent = data.buyerId || '-';
+        document.getElementById('modalSeller').textContent = data.sellerName || '-';
+        document.getElementById('modalSellerId').textContent = data.sellerId || '-';
+        document.getElementById('modalDetails').textContent = data.details || '-';
+        document.getElementById('modalPrice').textContent = data.price || '-';
+        document.getElementById('modalCurrency').textContent = data.currency || '-';
+        document.getElementById('modalStatus').textContent = data.status || '-';
+        document.getElementById('modalDate').textContent = data.date || '-';
+        document.getElementById('modalNotes').textContent = data.notes || 'لا توجد ملاحظات إضافية';
+
+        const modal = document.getElementById('detailsModal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      } catch (err) {
+        console.error('Modal Parse Error:', err);
+      }
+    }
+
+    function closeDetailsModal() {
+      const modal = document.getElementById('detailsModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    document.getElementById('detailsModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'detailsModal') closeDetailsModal();
+    });
+
+    function openDeleteModal(formAction, targetId, itemTitle, sellerId = null) {
+      const modal = document.getElementById('deleteConfirmModal');
+      const form = document.getElementById('deleteModalForm');
+      const titleEl = document.getElementById('deleteModalTargetTitle');
+
+      form.action = formAction;
+      document.getElementById('modalOrderId').value = targetId || '';
+      document.getElementById('modalAdId').value = targetId || '';
+      document.getElementById('modalSellerId').value = sellerId || '';
+
+      if (titleEl && itemTitle) {
+        titleEl.innerHTML = `هل أنت متأكد من حذف <strong>"${itemTitle}"</strong>؟ لا يمكن التراجع عن هذا الإجراء.`;
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeDeleteModal() {
+      const modal = document.getElementById('deleteConfirmModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    document.getElementById('deleteConfirmModal')?.addEventListener('click', (e) => {
+      if (e.target.id === 'deleteConfirmModal') closeDeleteModal();
+    });
+
+    function setSectionFilter(category) {
+      currentMainCategory = category;
+      document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('tab-' + category);
+      if (activeBtn) activeBtn.classList.add('active');
+      applyFilters();
+    }
 
     function applyFilters() {
       const query = (searchInput.value || '').trim().toLowerCase();
       if (clearSearchBtn) clearSearchBtn.classList.toggle('hidden', query.length === 0);
 
-      searchableItems.forEach(card => {
-        const text = (card.getAttribute('data-search') || '').toLowerCase();
-        const type = card.getAttribute('data-type');
+      let visibleCount = 0;
+      searchableItems.forEach(row => {
+        const text = (row.getAttribute('data-search') || '').toLowerCase();
+        const category = row.getAttribute('data-category');
+
         const matchesSearch = !query || text.includes(query);
-        const matchesTab = currentFilter === 'all' || currentFilter === type;
+        const matchesCategory = currentMainCategory === 'all' || currentMainCategory === category;
 
-        card.style.display = (matchesSearch && matchesTab) ? '' : 'none';
+        const isVisible = matchesSearch && matchesCategory;
+        row.style.display = isVisible ? '' : 'none';
+        if (isVisible) visibleCount++;
       });
-    }
 
-    function setSectionFilter(filter) {
-      currentFilter = filter;
-      document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
-      const activeBtn = document.getElementById('tab-' + filter);
-      if (activeBtn) activeBtn.classList.add('active');
-      applyFilters();
+      if (noResultsState) {
+        noResultsState.classList.toggle('hidden', visibleCount > 0);
+      }
     }
 
     if (searchInput) searchInput.addEventListener('input', applyFilters);

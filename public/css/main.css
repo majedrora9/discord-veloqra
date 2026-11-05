@@ -91,7 +91,7 @@ body.loading-active::-webkit-scrollbar {
 .badge-card-plate {
   position: absolute;
   inset: 2px -4px;
-  background-color: #ffd000;
+  background-color: #ffe27a;
   border-radius: 0.75rem;
   transform: rotate(-1.75deg);
   box-shadow: 0 8px 18px -3px rgba(10, 18, 44, 0.35), inset 0 -2px 0 rgba(0, 0, 0, 0.12);

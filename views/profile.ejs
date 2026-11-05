@@ -12,8 +12,28 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/main.css">
 
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffe27a',
+              gold: '#ffe27a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    /* كروت ثابتة بدون هوفر وانزياح عشوائي */
     .bento-card, .static-card {
       background: #ffffff;
       border: 1px solid #e2e8f0;
@@ -23,31 +43,39 @@
       box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04) !important;
     }
 
-    /* أنيميشن نزول الكرت الرئاسي من الأعلى */
-    @keyframes dropDownCard {
-      0% {
-        opacity: 0;
-        transform: translateY(-22px) scale(0.985);
-      }
-      100% {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    /* شريط التمرير الداخلي المنمق لبطاقات السجلات */
+    .custom-scroll-container {
+      max-height: 380px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 #f8fafc;
+    }
+    .custom-scroll-container::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scroll-container::-webkit-scrollbar-track {
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+    .custom-scroll-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 8px;
     }
 
+    @keyframes dropDownCard {
+      0% { opacity: 0; transform: translateY(-22px) scale(0.985); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
     .animate-drop-down {
       animation: dropDownCard 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      will-change: transform, opacity;
     }
 
-    /* نظام الـ Tooltip الموحد للشارات والأزرار */
     .has-custom-tooltip {
       position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
     }
-
     .custom-tooltip {
       position: absolute;
       bottom: calc(100% + 7px);
@@ -66,38 +94,10 @@
       pointer-events: none;
       z-index: 50;
       box-shadow: 0 4px 14px rgba(10, 18, 44, 0.25);
-      transition: none;
     }
-
-    .custom-tooltip::after {
-      content: '';
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 4px;
-      border-style: solid;
-      border-color: #0a122c transparent transparent transparent;
-    }
-
     .has-custom-tooltip:hover .custom-tooltip {
       opacity: 1;
       visibility: visible;
-    }
-
-    /* الشارات النظيفة (أيقونات سادة بدون خلفية مع تفاعل تكبير خفيف) */
-    .profile-badge-btn {
-      background: transparent !important;
-      border: none !important;
-      padding: 2px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .profile-badge-btn:hover {
-      transform: scale(1.18);
     }
 
     .page-clean-header nav {
@@ -112,19 +112,11 @@
     .page-clean-header nav span, .page-clean-header nav a {
       color: #0a122c !important;
     }
-    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
-    .page-clean-header #burgerBtn {
-      background-color: #f1f5f9 !important;
-      border-color: #cbd5e1 !important;
-    }
-    .page-clean-header #burgerBtn span { color: #0a122c !important; }
   </style>
 </head>
 <body class="loading-active bg-slate-50 text-slate-800 antialiased selection:bg-[#ffd000] selection:text-[#0a122c] flex flex-col min-h-screen">
 
-  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white">
-    <div class="simple-spinner"></div>
-  </div>
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-white"><div class="simple-spinner"></div></div>
 
   <header class="page-clean-header w-full relative z-30">
      <%- include('partials/header') %>
@@ -133,30 +125,21 @@
   <main class="w-full relative flex-1 py-10 md:py-14">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 space-y-6">
 
-      <!-- 1. بطاقة هوية المستخدم -->
+      <!-- 1. هوية المستخدم -->
       <div class="static-card animate-drop-down p-6 sm:p-7 flex flex-col sm:flex-row items-center justify-between gap-6" dir="ltr">
-        
-        <!-- قسم الهوية والاسم على اليسار تماماً -->
         <div class="flex items-center gap-4 text-left w-full sm:w-auto">
-          <div class="relative shrink-0">
-            <img src="<%= user.avatar %>" alt="<%= user.username %>" class="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl border-2 border-slate-100 object-cover shadow-xs" onerror="this.src='/logo.png'">
-          </div>
-          
+          <img src="<%= user.avatar %>" alt="<%= user.username %>" class="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl border-2 border-slate-100 object-cover shadow-xs" onerror="this.src='/logo.png'">
           <div>
             <div class="flex items-center gap-2.5 flex-wrap">
               <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight"><%= user.global_name || user.username %></h1>
-              
-              <!-- حاوية الشارات النظيفة (أيقونات فقط مع تول تيب ومودال) -->
               <div class="flex items-center gap-1.5 flex-wrap" id="userBadgesContainer"></div>
             </div>
-
             <p class="text-xs text-slate-400 font-mono mt-1.5">@<%= user.username %></p>
           </div>
         </div>
 
-        <!-- أزرار الإجراءات على اليمين مع تول تيب فوري -->
         <div class="flex items-center gap-2.5 self-end sm:self-center shrink-0" dir="rtl">
-<% 
+          <% 
             const allowedCustomBadges = ['veloqra_pro', 'pro', 'veloqra pro', 'veloqra_staff', 'staff', 'veloqra staff'];
             const canCustomize = (locals.userBadges || []).some(b => {
               const val = typeof b === 'string' ? b.trim().toLowerCase() : (b.key || b.id || '').trim().toLowerCase();
@@ -173,7 +156,6 @@
           </div>
           <% } %>
 
-          <!-- زر تسجيل الخروج -->
           <div class="has-custom-tooltip">
             <a href="/logout" class="w-10 h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 flex items-center justify-center transition-colors border border-rose-200/70">
               <span class="material-symbols-outlined text-xl">logout</span>
@@ -183,32 +165,24 @@
         </div>
       </div>
 
-      <!-- 2. بطاقات الإحصائيات (المحفظة والمبيعات فقط) -->
+      <!-- 2. بطاقات الإحصائيات -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <!-- رصيد فيلو كوين -->
         <div class="static-card p-5 flex items-center justify-between">
           <div>
             <span class="text-xs font-bold text-slate-400 block mb-1">رصيد المحفظة</span>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-2xl font-black text-slate-900 font-mono">
-                <%= Number(seller.veloCoins || 0).toLocaleString() %>$
-              </span>
-            </div>
+            <span class="text-2xl font-black text-slate-900 font-mono" dir="ltr">
+              <%= (Number(seller.veloCoins || 0)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) %>$
+            </span>
           </div>
           <div class="w-11 h-11 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-600 flex items-center justify-center shrink-0">
-            <span class="material-symbols-outlined text-2xl">monetization_on</span>
+            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
           </div>
         </div>
 
-        <!-- عدد المبيعات -->
         <div class="static-card p-5 flex items-center justify-between">
           <div>
             <span class="text-xs font-bold text-slate-400 block mb-1">المنتجات المباعة</span>
-            <div class="flex items-baseline gap-1.5">
-              <span class="text-2xl font-black text-blue-600 font-mono">
-                <%= seller.salesCount || 0 %>
-              </span>
-            </div>
+            <span class="text-2xl font-black text-blue-600 font-mono"><%= seller.salesCount || 0 %></span>
           </div>
           <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200/80 text-blue-600 flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-2xl">storefront</span>
@@ -216,14 +190,26 @@
         </div>
       </div>
 
-      <!-- 3. القوائم المنسدلة التفاعلية (Accordion Menus) للسجلات -->
-      <div class="space-y-3.5">
+      <!-- عنوان قسم السجلات -->
+      <div class="flex items-center justify-between pt-4 pb-1">
+        <div class="flex items-center gap-2.5">
+          <span class="w-2.5 h-6 rounded-full bg-blue-600 inline-block"></span>
+          <h2 class="text-base sm:text-lg font-black text-slate-900 tracking-tight">سجل العمليات والنشاطات</h2>
+        </div>
+      </div>
+
+      <!-- 3. القوائم المنسدلة التفاعلية مع البحث والسلايدر -->
+      <div class="space-y-4">
         
-        <!-- أ. قائمة سجل الطلبات والتقديمات -->
+        <!-- أ. سجل الطلبات المعلقة -->
         <% 
           const safeJobApps = (locals.jobApplications && Array.isArray(locals.jobApplications)) ? locals.jobApplications : [];
           const safeOrders = (locals.orders && Array.isArray(locals.orders)) ? locals.orders : [];
-          const totalOrdersCount = safeOrders.length + safeJobApps.length;
+          const safeStoreOrders = (locals.storeBuyerOrders && Array.isArray(locals.storeBuyerOrders)) ? locals.storeBuyerOrders : [];
+          
+          const pendingStoreOrders = safeStoreOrders.filter(o => o.status !== 'completed');
+          const pendingDirectOrders = safeOrders.filter(o => o.status !== 'approved');
+          const totalPendingOrdersCount = pendingDirectOrders.length + safeJobApps.length + pendingStoreOrders.length;
         %>
         <div class="static-card overflow-hidden">
           <button type="button" onclick="toggleAccordion('ordersAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
@@ -231,60 +217,108 @@
               <div class="w-9 h-9 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-xl">receipt_long</span>
               </div>
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل الطلبات</h3>
-              </div>
+              <h3 class="text-sm font-extrabold text-slate-900">سجل الطلبات المعلقة</h3>
             </div>
-
             <div class="flex items-center gap-2.5">
               <span class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold font-mono">
-                <%= totalOrdersCount %>
+                <%= totalPendingOrdersCount %>
               </span>
               <span id="ordersAccordion-icon" class="material-symbols-outlined text-slate-400 transition-transform duration-200">expand_more</span>
             </div>
           </button>
 
-          <div id="ordersAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
-            <% if (totalOrdersCount > 0) { %>
-              <div class="space-y-2.5">
+          <div id="ordersAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50 space-y-3">
+            <% if (totalPendingOrdersCount > 0) { %>
+              
+              <!-- حقل البحث في الطلبات -->
+              <div class="relative mb-2">
+                <span class="material-symbols-outlined text-slate-400 text-sm absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+                <input 
+                  type="text" 
+                  oninput="filterContainerItems(this, '#ordersListContainer .profile-order-item')" 
+                  placeholder="بحث في الطلبات المعلقة..." 
+                  class="w-full pr-8 pl-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-blue-500"
+                >
+              </div>
 
-                <% safeJobApps.forEach(jApp => { %>
-                  <div class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs">
-                    <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-lg"><%= jApp.icon || 'work' %></span>
+              <!-- السلايدر الداخلي للطلبات -->
+              <div id="ordersListContainer" class="custom-scroll-container space-y-2.5 pl-1">
+                <% pendingDirectOrders.forEach(ord => { %>
+                  <% 
+                    let coinsNumber = '100';
+                    if (ord.plan && ord.plan.includes('VeloCoin_')) {
+                      coinsNumber = ord.plan.replace('VeloCoin_', '');
+                    }
+                    const titleText = `شحن رصيد: ${Number(coinsNumber).toLocaleString()} Velo Coin`;
+                  %>
+                  <div class="profile-order-item p-4 rounded-2xl bg-white border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs" data-search="<%= titleText %> <%= ord.clientContact %> <%= ord.price %>">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 border border-amber-200 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-xl">monetization_on</span>
                       </div>
-                      <div>
-                        <h4 class="text-xs sm:text-sm font-extrabold text-slate-900">تقديم: <%= jApp.jobTitle %></h4>
-                        <div class="text-[11px] text-slate-400 font-mono mt-0.5" dir="ltr">
-                          <%= new Date(jApp.appliedAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                      <div class="min-w-0">
+                        <div class="flex items-center gap-2">
+                          <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate"><%= titleText %></h4>
+                          <span class="font-mono text-[10px] text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-bold shrink-0"><%= ord.clientContact %></span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-0.5 line-clamp-1"><%= ord.description %></p>
+                        <div class="text-[10px] text-slate-400 font-mono mt-0.5" dir="ltr">
+                          <%= new Date(ord.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) %>
                         </div>
                       </div>
                     </div>
-                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold <%= jApp.status === 'accepted' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : (jApp.status === 'rejected' ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-200') %>">
-                      <%= jApp.status === 'accepted' ? 'تم القبول' : (jApp.status === 'rejected' ? 'مرفوض' : 'قيد المراجعة') %>
-                    </span>
+
+                    <div class="flex items-center gap-2 self-end sm:self-center shrink-0">
+                      <span class="font-mono font-black text-xs text-[#0a122c] px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200">
+                        <%= ord.price %>
+                      </span>
+                      <span class="px-3 py-1 rounded-full text-[11px] font-bold <%= ord.status === 'rejected' ? 'bg-rose-50 text-rose-600 border border-rose-200' : 'bg-amber-50 text-amber-600 border border-amber-200' %>">
+                        <%= ord.status === 'rejected' ? 'مرفوض' : 'قيد التدقيق' %>
+                      </span>
+                    </div>
+                  </div>
+                <% }) %>
+
+                <!-- طلبات المتجر المعلقة -->
+                <% pendingStoreOrders.forEach(stOrder => { %>
+                  <div class="profile-order-item p-4 rounded-2xl bg-white border border-slate-200 flex items-center justify-between gap-3 shadow-2xs" data-search="<%= stOrder.orderId %> <%= stOrder.items.map(i => i.title).join(' ') %>">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-xl">shopping_cart</span>
+                      </div>
+                      <div class="min-w-0">
+                        <h4 class="text-xs sm:text-sm font-black text-slate-900 truncate">طلب متجر: #<%= stOrder.orderId %></h4>
+                        <p class="text-[11px] text-slate-500 mt-0.5 truncate"><%= stOrder.items.map(i => i.title).join(' ، ') %></p>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200 shrink-0">قيد الانتظار</span>
+                  </div>
+                <% }) %>
+
+                <!-- طلبات التوظيف -->
+                <% safeJobApps.forEach(jApp => { %>
+                  <div class="profile-order-item p-3.5 rounded-xl bg-white border border-slate-200 flex items-center justify-between gap-3 shadow-2xs" data-search="<%= jApp.jobTitle %>">
+                    <span class="text-xs font-bold text-slate-800">تقديم لوظيفة: <%= jApp.jobTitle %></span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700">طلب توظيف</span>
                   </div>
                 <% }) %>
               </div>
+
             <% } else { %>
-              <p class="text-center text-xs text-slate-400 py-4 font-medium">لا توجد طلبات واردة حالياً</p>
+              <p class="text-center text-xs text-slate-400 py-4 font-medium">لا توجد طلبات معلقة حالياً</p>
             <% } %>
           </div>
         </div>
 
-        <!-- ب. قائمة سجل المشتريات المدمجة -->
+        <!-- ب. سجل المشتريات المعتمدة (مع شريط بحث وسلايدر) -->
         <div class="static-card overflow-hidden">
           <button type="button" onclick="toggleAccordion('purchasesAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-xl">shopping_bag</span>
               </div>
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل المشتريات</h3>
-              </div>
+              <h3 class="text-sm font-extrabold text-slate-900">سجل المشتريات والعمليات المعتمدة</h3>
             </div>
-
             <div class="flex items-center gap-2.5">
               <span class="px-2.5 py-0.5 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold font-mono">
                 <%= (seller.purchases && seller.purchases.length) || 0 %>
@@ -293,43 +327,76 @@
             </div>
           </button>
 
-          <div id="purchasesAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
+          <div id="purchasesAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50 space-y-3">
             <% if (seller.purchases && seller.purchases.length > 0) { %>
-              <div class="space-y-2.5">
-                <% seller.purchases.slice().reverse().forEach(item => { %>
-                  <div class="p-3.5 rounded-xl bg-white border border-slate-200/80 flex items-center justify-between gap-3 shadow-xs">
-                    <div>
-                      <h4 class="text-xs sm:text-sm font-extrabold text-slate-900"><%= item.productName %></h4>
-                      <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
-                        <span>البائع: <strong class="text-slate-600"><%= item.sellerName %></strong></span>
-                        <span>•</span>
-                        <span class="font-mono" dir="ltr"><%= new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %></span>
-                      </div>
-                    </div>
-                    <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-bold font-mono">
-                      <%= item.price %>$
-                    </span>
-                  </div>
-                <% }) %>
+              
+              <!-- حقل البحث في المشتريات -->
+              <div class="relative mb-2">
+                <span class="material-symbols-outlined text-slate-400 text-sm absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+                <input 
+                  type="text" 
+                  oninput="filterContainerItems(this, '#purchasesTableBody tr.purchase-row')" 
+                  placeholder="بحث في المشتريات والشحنات المعتمدة..." 
+                  class="w-full pr-8 pl-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-blue-500"
+                >
               </div>
+
+              <!-- السلايدر لجدول المشتريات -->
+              <div class="custom-scroll-container rounded-2xl border border-slate-200 bg-white">
+                <table class="w-full text-right text-xs">
+                  <thead class="bg-slate-50 border-b border-slate-200 text-slate-400 font-bold sticky top-0 z-10">
+                    <tr>
+                      <th class="py-3 px-4">نوع المعاملة / المنتج</th>
+                      <th class="py-3 px-4 text-center">الكمية</th>
+                      <th class="py-3 px-4 text-center">المبلغ المستحق</th>
+                      <th class="py-3 px-4">الجهة</th>
+                      <th class="py-3 px-4 text-left">التاريخ</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100" id="purchasesTableBody">
+                    <% seller.purchases.slice().reverse().forEach(item => { %>
+                      <tr class="purchase-row hover:bg-slate-50 transition-colors" data-search="<%= item.productName %> <%= item.sellerName %> <%= item.price %>">
+                        <td class="py-3.5 px-4 font-extrabold text-slate-900 flex items-center gap-2">
+                          <% if (item.productName && item.productName.includes('شحن')) { %>
+                            <span class="material-symbols-outlined text-amber-500 text-base">monetization_on</span>
+                          <% } %>
+                          <span><%= item.productName %></span>
+                        </td>
+                        <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-700">
+                          <%= item.qty || 1 %>
+                        </td>
+                        <td class="py-3.5 px-4 text-center">
+                          <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-mono font-black">
+                            <%= item.price %>
+                          </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-slate-600 font-bold">
+                          <%= item.sellerName || 'Veloqra' %>
+                        </td>
+                        <td class="py-3.5 px-4 text-left font-mono text-[11px] text-slate-400" dir="ltr">
+                          <%= new Date(item.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) %>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+
             <% } else { %>
-              <p class="text-center text-xs text-slate-400 py-4 font-medium">لم تقم بإتمام أي عملية شراء حتى الآن</p>
+              <p class="text-center text-xs text-slate-400 py-4 font-medium">لم تقم بإتمام أي عملية شراء أو شحن حتى الآن</p>
             <% } %>
           </div>
         </div>
 
-        <!-- ج. قائمة سجل المخالفات -->
+        <!-- ج. سجل المخالفات (مع شريط بحث وسلايدر) -->
         <div class="static-card overflow-hidden">
           <button type="button" onclick="toggleAccordion('violationsAccordion')" class="w-full p-5 flex items-center justify-between bg-white hover:bg-slate-50/70 transition-colors cursor-pointer border-none text-right">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-xl">gavel</span>
               </div>
-              <div>
-                <h3 class="text-sm font-extrabold text-slate-900 leading-tight">سجل المخالفات</h3>
-              </div>
+              <h3 class="text-sm font-extrabold text-slate-900">سجل المخالفات</h3>
             </div>
-
             <div class="flex items-center gap-2.5">
               <span class="px-2.5 py-0.5 rounded-lg <%= (seller.violations && seller.violations.length > 0) ? 'bg-rose-100 text-rose-700' : 'bg-slate-100 text-slate-700' %> text-xs font-bold font-mono">
                 <%= (seller.violations && seller.violations.length) || 0 %>
@@ -338,11 +405,24 @@
             </div>
           </button>
 
-          <div id="violationsAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50">
+          <div id="violationsAccordion" class="hidden border-t border-slate-100 p-5 bg-slate-50/50 space-y-3">
             <% if (seller.violations && seller.violations.length > 0) { %>
-              <div class="space-y-2.5">
+              
+              <!-- بحث في المخالفات -->
+              <div class="relative mb-2">
+                <span class="material-symbols-outlined text-slate-400 text-sm absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">search</span>
+                <input 
+                  type="text" 
+                  oninput="filterContainerItems(this, '#violationsListContainer .violation-item')" 
+                  placeholder="بحث في المخالفات..." 
+                  class="w-full pr-8 pl-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs outline-none focus:border-rose-500"
+                >
+              </div>
+
+              <!-- السلايدر للمخالفات -->
+              <div id="violationsListContainer" class="custom-scroll-container space-y-2.5 pl-1">
                 <% seller.violations.slice().reverse().forEach(v => { %>
-                  <div class="p-3.5 rounded-xl bg-rose-50/60 border border-rose-200/80 flex items-start justify-between gap-3">
+                  <div class="violation-item p-3.5 rounded-xl bg-rose-50/70 border border-rose-200/80 flex items-start justify-between gap-3 shadow-2xs" data-search="<%= v.severity %> <%= v.reason %>">
                     <div>
                       <span class="inline-block px-2 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px] font-extrabold mb-1"><%= v.severity %></span>
                       <p class="text-xs font-bold text-slate-800"><%= v.reason %></p>
@@ -353,9 +433,10 @@
                   </div>
                 <% }) %>
               </div>
+
             <% } else { %>
               <div class="text-center text-xs text-slate-400 py-4 font-medium">
-                <span>سجلك نظيف ومثالي، لا توجد أي مخالفات مسجلة</span>
+                سجلك نظيف ومثالي، لا توجد أي مخالفات مسجلة
               </div>
             <% } %>
           </div>
@@ -366,39 +447,12 @@
     </div>
   </main>
 
-  <!-- نافذة المودال لعرض تفاصيل الشارة ووصفها عند النقر -->
-  <div id="badgeDetailModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-[#0a122c]/65 backdrop-blur-sm p-4 transition-all">
-    <div class="w-full max-w-sm bg-white border border-slate-200 rounded-3xl p-6 shadow-2xl text-center relative animate-in fade-in zoom-in-95 duration-200">
-      
-      <button type="button" onclick="closeBadgeModal()" class="absolute left-4 top-4 w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center border border-slate-200 cursor-pointer transition-colors">
-        <span class="material-symbols-outlined text-lg">close</span>
-      </button>
-
-      <!-- أيقونة الشارة سادة ونقية بدون خلفيات[cite: 10] -->
-      <div id="modalBadgeIconWrapper" class="flex items-center justify-center mx-auto mb-3">
-        <span id="modalBadgeIcon" class="material-symbols-outlined text-5xl">military_tech</span>
-      </div>
-
-      <h3 id="modalBadgeTitle" class="text-lg font-black text-slate-900 mb-2">اسم الشارة</h3>
-      
-      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100 text-slate-600 text-xs sm:text-sm leading-relaxed mb-5" id="modalBadgeDesc">
-        وصف وتفاصيل الشارة...
-      </div>
-
-      <button type="button" onclick="closeBadgeModal()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer border border-slate-200">
-        إغلاق
-      </button>
-    </div>
-  </div>
-
   <div class="w-full mt-auto">
     <%- include('partials/footer') %>
   </div>
 
   <script src="/js/script.js"></script>
-
   <script>
-    // فتح وإغلاق القوائم المنسدلة
     function toggleAccordion(id) {
       const panel = document.getElementById(id);
       const icon = document.getElementById(id + '-icon');
@@ -411,41 +465,17 @@
       }
     }
 
-    // دوال المودال على النطاق العام للوصول المباشر
-    window.openBadgeModal = function(name, icon, color, description) {
-      const modal = document.getElementById('badgeDetailModal');
-      const modalIcon = document.getElementById('modalBadgeIcon');
-      const modalTitle = document.getElementById('modalBadgeTitle');
-      const modalDesc = document.getElementById('modalBadgeDesc');
-
-      if (!modal) return;
-
-      modalTitle.textContent = name || 'شارة فيلوكرا';
-      modalIcon.textContent = icon || 'military_tech';
-      modalIcon.style.color = color || '#3b82f6';
-      modalDesc.textContent = description || 'لايوجد وصف';
-
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
-    };
-
-    window.closeBadgeModal = function() {
-      const modal = document.getElementById('badgeDetailModal');
-      if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
-    };
+    // دالة الفلترة والبحث المباشر داخل السجلات
+    function filterContainerItems(input, selector) {
+      const q = (input.value || '').trim().toLowerCase();
+      const items = document.querySelectorAll(selector);
+      items.forEach(el => {
+        const text = (el.getAttribute('data-search') || el.textContent || '').toLowerCase();
+        el.style.display = (!q || text.includes(q)) ? '' : 'none';
+      });
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
-      const modal = document.getElementById('badgeDetailModal');
-      if (modal) {
-        modal.addEventListener('click', (e) => {
-          if (e.target === modal) closeBadgeModal();
-        });
-      }
-
-      // بناء الشارات
       const container = document.getElementById('userBadgesContainer');
       if (!container) return;
 
@@ -464,12 +494,8 @@
         }
       });
 
-      if (!badgesMap['staff']) {
-        badgesMap['staff'] = { name: 'Veloqra Staff', icon: 'shield_person', color: '#6366f1', description: 'شارة مخصصة لأعضاء طاقم الإدارة العليا في منصة ومجتمع فيلوكرا.' };
-      }
-      if (!badgesMap['veloqra_pro']) {
-        badgesMap['veloqra_pro'] = { name: 'Veloqra Pro', icon: 'stars', color: '#ffd000', description: 'عضوية فيلوكرا المميزة التي تتيح تخصيص المظهر وامتيازات متقدمة.' };
-      }
+      badgesMap['staff'] = { name: 'Veloqra Staff', icon: 'shield_person', color: '#6366f1', description: 'شارة مخصصة لإدارة فيلوكرا.' };
+      badgesMap['veloqra_pro'] = { name: 'Veloqra Pro', icon: 'stars', color: '#ffd000', description: 'عضوية مميزة في فيلوكرا.' };
 
       const sanitizedKeys = (rawUserBadges || []).map(item => {
         if (!item) return '';
@@ -483,35 +509,15 @@
       if (uniqueBadgeKeys.length > 0) {
         container.innerHTML = '';
         uniqueBadgeKeys.forEach(key => {
-          const badge = badgesMap[key] || {
-            name: key.replace(/_/g, ' '),
-            icon: 'military_tech',
-            color: '#3b82f6',
-            description: 'لايوجد وصف'
-          };
-
+          const badge = badgesMap[key] || { name: key.replace(/_/g, ' '), icon: 'military_tech', color: '#3b82f6' };
           const wrapper = document.createElement('div');
           wrapper.className = 'has-custom-tooltip';
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'profile-badge-btn';
-          btn.innerHTML = `<span class="material-symbols-outlined text-lg sm:text-xl" style="color: ${badge.color};">${badge.icon}</span>`;
-          
-          btn.addEventListener('click', () => {
-            openBadgeModal(badge.name, badge.icon, badge.color, badge.description);
-          });
-
-          const tooltip = document.createElement('div');
-          tooltip.className = 'custom-tooltip';
-          tooltip.textContent = badge.name;
-
-          wrapper.appendChild(btn);
-          wrapper.appendChild(tooltip);
+          wrapper.innerHTML = `
+            <span class="material-symbols-outlined text-lg sm:text-xl" style="color: ${badge.color};">${badge.icon}</span>
+            <div class="custom-tooltip">${badge.name}</div>
+          `;
           container.appendChild(wrapper);
         });
-      } else {
-        container.innerHTML = '';
       }
     });
   </script>

@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="scroll-smooth overflow-x-hidden">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veloqra - المتجر والخدمات</title>
+
+  <link rel="icon" type="image/png" href="/logo.png">
+  <link rel="shortcut icon" type="image/png" href="/logo.png">
+  <link rel="apple-touch-icon" href="/logo.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Veloqra">
+  <meta property="og:title" content="Veloqra Store">
+  <meta property="og:description" content="متجر الكتروني متاح للجميع - بيع وشراء">
+  <meta property="og:image" content="/logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.2.3/css/flag-icons.min.css"/>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['IBM Plex Sans Arabic', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              blue: '#4287f5',
+              navy: '#0a122c',
+              yellow: '#ffe27a',
+              gold: '#ffe27a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="/css/main.css">
+
+  <style>
+    body.modal-lock, html.modal-lock {
+      overflow: hidden !important;
+      height: 100vh !important;
+      touch-action: none;
+    }
+
+    .page-clean-header nav {
+      margin-bottom: 0 !important;
+      padding-top: 1.5rem;
+    }
+    .page-clean-header nav > div:first-child {
+      background-color: rgba(255, 255, 255, 0.9) !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 4px 20px -2px rgba(10, 18, 44, 0.05) !important;
+    }
+    .page-clean-header nav span, .page-clean-header nav a {
+      color: #0a122c !important;
+    }
+    .page-clean-header nav .hidden.md\:flex a:hover { color: #4287f5 !important; }
+    .page-clean-header nav .hidden.md\:block a {
+      background-color: #0a122c !important;
+      color: #ffffff !important;
+      border-color: #0a122c !important;
+    }
+
+    .store-card-modern {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      cursor: pointer;
+      position: relative;
+    }
+    .store-card-modern:hover {
+      border-color: #cbd5e1;
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px -8px rgba(10, 18, 44, 0.08);
+    }
+
+    .store-card-pinned {
+      background: #ffffff !important;
+      border: 2px solid #FFE27A !important;
+      box-shadow: 0 10px 25px -5px rgba(255, 226, 122, 0.35) !important;
+    }
+
+    .custom-modal-scroll::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-track {
+      background: #f8fafc;
+    }
+    .custom-modal-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+
+    .trash-btn-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 9999px;
+      background-color: #fee2e2;
+      color: #ef4444;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid #fecaca;
+      cursor: pointer;
+    }
+    .trash-btn-circle:hover {
+      background-color: #fecaca;
+      color: #dc2626;
+      transform: scale(1.08);
+    }
+    .trash-btn-circle .material-symbols-outlined {
+      font-size: 16px;
+      color: #ef4444;
+    }
+
+    .pin-btn-circle {
+      width: 30px;
+      height: 30px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .pin-btn-circle.pinned {
+      background: #fff8db;
+      border: 1px solid #ffe27a;
+      color: #b45309;
+    }
+    .pin-btn-circle.unpinned {
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      color: #94a3b8;
+    }
+    .pin-btn-circle:hover {
+      transform: scale(1.08);
+    }
+
+    #appToast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      padding: 0.85rem 1.5rem;
+      border-radius: 1.25rem;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 999999;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    #appToast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .custom-select-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 0.55rem 0.8rem;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #0a122c;
+      transition: all 0.2s ease;
+      width: 100%;
+    }
+    .custom-select-trigger:hover {
+      border-color: #4287f5;
+    }
+    .custom-select-dropdown {
+      position: absolute;
+      top: calc(100% + 5px);
+      right: 0;
+      left: 0;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1rem;
+      box-shadow: 0 15px 35px -5px rgba(10, 18, 44, 0.15);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 240px;
+    }
+    .custom-select-dropdown.active {
+      display: flex;
+    }
+    .custom-select-search {
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid #f1f5f9;
+      background: #f8fafc;
+    }
+    .custom-select-options {
+      overflow-y: auto;
+      max-height: 180px;
+    }
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #334155;
+      transition: background 0.15s ease;
+    }
+    .custom-select-option:hover {
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .quick-prices-popover {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: 260px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      padding: 0.85rem;
+      box-shadow: 0 15px 35px -5px rgba(10, 18, 44, 0.16);
+      z-index: 40;
+      display: none;
+    }
+    .quick-prices-popover.active {
+      display: block;
+    }
+  </style>
+</head>
+<body class="loading-active text-slate-800 antialiased selection:bg-[#ffe27a] selection:text-[#0a122c] flex flex-col min-h-screen">
+
+  <div id="page-loader" class="fixed inset-0 z-50 flex items-center justify-center">
+    <div class="simple-spinner"></div>
+  </div>
+
+  <div id="appToast" class="flex items-center gap-2.5 shadow-2xl border">
+    <span class="material-symbols-outlined text-lg" id="toastIcon">check_circle</span>
+    <span id="toastMsg">تمت العملية بنجاح</span>
+  </div>
+
+  <header class="page-clean-header w-full relative z-30">
+    <%- include('../partials/header') %>
+  </header>
+
+  <main class="w-full relative flex-1 py-10 md:py-14">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6">
+
+      <div class="text-center max-w-2xl mx-auto mb-10 sm:mb-14">
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 mt-3 tracking-tight">
+          متجر فيلوكرا الإلكتروني
+        </h1>
+        <p class="text-slate-500 text-xs sm:text-sm md:text-base mt-2">
+          تصفح العروض الحصرية والخدمات المتنوعة مع خيارات دفع متعددة وضمان كامل
+        </p>
+      </div>
+
+      <!-- قسم البحث والإجراءات -->
+      <div class="mb-10 p-4 sm:p-5 rounded-2xl bg-slate-50 border border-slate-200/90 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex-1 w-full">
+          <div class="relative w-full">
+            <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
+            <input 
+              type="text" 
+              id="liveSearchInput"
+              value="<%= currentSearch %>" 
+              oninput="handleLiveSearch(this.value)"
+              placeholder="ابحث عن منتج، وصف، أو اسم بائع..." 
+              autocomplete="off"
+              class="w-full pr-11 pl-4 py-3 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm font-medium focus:outline-none focus:border-blue-500 transition-all shadow-2xs"
+            >
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto shrink-0">
+          <% if (user) { %>
+            <a href="/store/publish" class="flex-1 md:flex-initial flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#ffe27a] hover:bg-[#ffd000] text-[#070b1a] text-xs font-bold transition-all shadow-sm cursor-pointer no-underline">
+              <span class="material-symbols-outlined text-base">add</span>
+              <span>نشر منتج</span>
+            </a>
+          <% } %>
+
+          <button type="button" onclick="openCartModal()" class="flex-1 md:flex-initial relative flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-[#0a122c] hover:bg-[#1e293b] text-white text-xs font-bold transition-all shadow-sm cursor-pointer border-none">
+            <span class="material-symbols-outlined text-base">shopping_cart</span>
+            <span>السلة</span>
+            <span id="cartCountBadge" class="px-2 py-0.5 rounded-full bg-[#ffd000] text-[#0a122c] text-[10px] font-extrabold hidden font-mono">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- الحاوية الأساسية للنتائج -->
+      <div id="storeResultsArea">
+        <% if (!items || items.length === 0) { %>
+          <div class="py-16 px-4 rounded-2xl text-center max-w-md mx-auto">
+            <div class="w-14 h-14 rounded-2xl text-slate-400 flex items-center justify-center mx-auto mb-3">
+              <span class="material-symbols-outlined text-3xl">production_quantity_limits</span>
+            </div>
+            <h4 class="text-sm font-extrabold text-slate-800">لا يوجد منتجات معروضة حالياً</h4>
+          </div>
+        <% } else { %>
+          <%
+            // تعريف مصفوفات الرموز والأسماء في أعلى البلوك لضمان الوصول إليها دائماً
+            const currencyNamesMapLocal = {
+              'USD_SHAM': '$', 'USD_PAYPAL': '$', 'SYP_CASH': 'ل.س', 'SYP_SHAM': 'ل.س', 'SYP_PAYMERA': 'ل.س',
+              'SYP_MTN': 'ل.س', 'SYP_SYRIATEL': 'ل.س', 'IQD_CASH': 'د.ع',
+              'IQD_ASIACELL': 'د.ع', 'IQD_QI': 'د.ع', 'TRY_PAPARA': 'TL', 'TRY_CASH': 'TL',
+              'LBP_WHISH': 'L.L', 'JOD_CLIQ': 'د.أ', 'JOD_ORANGE': 'د.أ', 'EGP_VODAFONE': 'ج.م',
+              'EGP_INSTAPAY': 'ج.م', 'SAR_STCPAY': 'ر.س', 'SAR_URPAY': 'ر.س', 'VELO_COIN': 'Coin',
+              'DZD_BARIDIMOB': 'د.ج', 'DZD_CASH': 'د.ج', 'MAD_CIH': 'د.م', 'MAD_CASH': 'د.م',
+              'TND_D17': 'د.ت', 'TND_FLOUCI': 'د.ت'
+            };
+
+            const currencyFullNamesMapLocal = {
+              'SYP_CASH': 'ليرة سورية (نقداً)', 'IQD_CASH': 'دينار عراقي (نقداً)', 'SYP_SHAM': 'ليرة سورية (شام كاش)',
+              'SYP_PAYMERA': 'ليرة سورية (بايميرا)', 'SYP_MTN': 'ليرة سورية (ام تي ان كاش)', 'SYP_SYRIATEL': 'ليرة سورية (سيرياتيل كاش)',
+              'IQD_ASIACELL': 'دينار عراقي (آسيا سيل)', 'IQD_QI': 'دينار عراقي (بنك الرافدين Qi)', 'USD_SHAM': 'دولار (شام كاش)', 
+              'USD_PAYPAL': 'دولار (PayPal)', 'VELO_COIN': 'فيلو كوين', 'TRY_PAPARA': 'ليرة تركية (بابارا)', 'TRY_CASH': 'ليرة تركية (كاش)',
+              'LBP_WHISH': 'ويش موني (لبنان)', 'JOD_CLIQ': 'دينار أردني (كليك)', 'JOD_ORANGE': 'دينار أردني (أورنج)',
+              'EGP_VODAFONE': 'جنيه مصري (فودافون كاش)', 'EGP_INSTAPAY': 'جنيه مصري (إنستاباي)', 'SAR_STCPAY': 'ريال سعودي (STC Pay)', 'SAR_URPAY': 'ريال سعودي (Urpay)',
+              'DZD_BARIDIMOB': 'بريدي موب (الجزائر)', 'DZD_CASH': 'دينار جزائري (كاش)', 'MAD_CIH': 'CIH Bank (المغرب)', 'MAD_CASH': 'درهم مغربي (كاش)',
+              'TND_D17': 'D17 (تونس)', 'TND_FLOUCI': 'Flouci (تونس)'
+            };
+          %>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="storeContainer">
+            <% items.forEach((item, index) => { %>
+              <% 
+                const isOwner = user && String(user.id) === String(item.seller.discordId);
+                const canManage = isOwner || isStaffOrAdmin;
+                const isPinned = Boolean(item.isPinned);
+                const isOutOfStock = (item.quantity !== -1) && ((item.quantity || 0) <= 0);
+              %>
+              <div id="store-item-card-<%= item._id %>" class="store-card-modern <%= isPinned ? 'store-card-pinned' : '' %>" onclick="handleItemCardClick('<%= item.type %>', '<%= item._id %>', <%= JSON.stringify(item) %>)">
+                <div>
+                  <div class="relative w-full h-40 rounded-xl bg-slate-100 overflow-hidden mb-3 border border-slate-100 cursor-pointer">
+                    <img id="card-img-<%= index %>" src="<%= (item.images && item.images.length > 0) ? item.images[0] : '/logo.png' %>" class="w-full h-full object-cover <%= isOutOfStock ? 'grayscale opacity-75' : '' %>" onerror="this.src='/logo.png'">
+                    
+                    <% if (item.images && item.images.length > 1) { %>
+                      <button type="button" onclick="event.stopPropagation(); prevCardImage(<%= index %>, <%= JSON.stringify(item.images) %>)" class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer border-none z-10">
+                        <span class="material-symbols-outlined text-sm">chevron_right</span>
+                      </button>
+                      <button type="button" onclick="event.stopPropagation(); nextCardImage(<%= index %>, <%= JSON.stringify(item.images) %>)" class="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center transition-all cursor-pointer border-none z-10">
+                        <span class="material-symbols-outlined text-sm">chevron_left</span>
+                      </button>
+                    <% } %>
+
+                    <% if (isOutOfStock) { %>
+                      <span class="absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[10px] font-black backdrop-blur-md shadow-2xs bg-slate-800/90 text-rose-300 border border-slate-600">
+                        نفذت الكمية
+                      </span>
+                    <% } else if (item.type === 'multi') { %>
+                      <span class="absolute top-2.5 right-2.5 px-3 py-1 rounded-full text-[10px] font-black backdrop-blur-md shadow-2xs bg-[#0a122c]/85 text-[#ffd000]">
+                        متعدد البيع
+                      </span>
+                    <% } %>
+
+                    <span id="pin-badge-<%= item._id %>" class="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#FFE27A] text-[#854d0e] border border-[#fde047] flex items-center gap-1 shadow-xs <%= isPinned ? '' : 'hidden' %>">
+                      <span class="material-symbols-outlined text-xs">star</span>
+                      <span>مثبت</span>
+                    </span>
+                  </div>
+
+                  <h3 class="font-bold text-sm sm:text-base mb-1 truncate text-slate-900"><%= item.title %></h3>
+                  <% if (item.description && item.description.trim()) { %>
+                    <p class="text-slate-500 text-xs leading-relaxed mb-3 line-clamp-2 min-h-[34px]">
+                      <%= item.description %>
+                    </p>
+                  <% } else { %>
+                    <div class="min-h-[34px] mb-3"></div>
+                  <% } %>
+
+                  <% if (item.type === 'single') { %>
+                    <div class="my-2 relative w-full flex justify-center" onclick="event.stopPropagation()">
+                      <button type="button" onclick="toggleQuickPrices('popover-<%= index %>')" class="group flex items-center gap-1.5 py-1 px-2 rounded-xl hover:bg-slate-50 transition-all cursor-pointer border-none bg-transparent">
+                        <% if (item.singlePricing?.allowedCurrencies?.length > 0) { %>
+                          <% const firstCurr = item.singlePricing.allowedCurrencies[0]; %>
+                          <span class="curr-badge-slot shrink-0" data-curr="<%= firstCurr.currency %>"></span>
+                          <span class="font-mono font-black text-lg text-[#0a122c] group-hover:text-blue-600 transition-colors"><%= firstCurr.price %></span>
+                          <span class="text-xs text-slate-500 font-sans font-bold group-hover:text-blue-500 transition-colors"><%= currencyNamesMapLocal[firstCurr.currency] || firstCurr.currency %></span>
+                        <% } else { %>
+                          <span class="text-blue-600 font-bold text-sm font-sans hover:underline">طرق الدفع والأسعار</span>
+                        <% } %>
+                      </button>
+
+                      <div id="popover-<%= index %>" class="quick-prices-popover">
+                        <span class="text-[10px] font-bold text-slate-400 block mb-2 pb-1.5 border-b border-slate-100">طرق الدفع المقبولة:</span>
+                        <div class="space-y-1.5 max-h-48 overflow-y-auto custom-modal-scroll">
+                          <% (item.singlePricing?.allowedCurrencies || []).forEach(curr => { %>
+                            <div class="flex items-center justify-between text-xs py-2 px-2.5 rounded-xl bg-slate-50 border border-slate-100/80">
+                              <div class="flex items-center gap-2 min-w-0">
+                                <span class="curr-badge-slot shrink-0" data-curr="<%= curr.currency %>"></span>
+                                <span class="font-bold text-[11px] text-slate-700 truncate"><%= currencyFullNamesMapLocal[curr.currency] || curr.currency %></span>
+                              </div>
+                              <span class="font-mono font-black text-[#0a122c] shrink-0 text-xs"><%= curr.price %></span>
+                            </div>
+                          <% }) %>
+                        </div>
+                      </div>
+                    </div>
+                  <% } %>
+                </div>
+
+                <div>
+                  <div class="pt-3 border-t border-slate-100 flex items-center justify-between mb-3 mt-1">
+                    <a 
+                      href="/users/<%= item.seller.discordId %>" 
+                      onclick="event.stopPropagation()" 
+                      class="flex items-center gap-2 group/seller hover:opacity-80 transition-opacity"
+                      title="زيارة الملف الشخصي"
+                    >
+                      <img src="<%= item.seller.avatar || '/logo.png' %>" class="w-6 h-6 rounded-full object-cover border border-slate-200" onerror="this.src='/logo.png'">
+                      <span class="text-xs font-bold text-slate-700 group-hover/seller:text-blue-600 transition-colors">@<%= item.seller.username %></span>
+                    </a>
+
+                    <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+                      <% if (isStaffOrAdmin) { %>
+                        <button type="button" id="pin-btn-<%= item._id %>" onclick="togglePinItem('<%= item._id %>')" class="pin-btn-circle <%= isPinned ? 'pinned' : 'unpinned' %>" title="<%= isPinned ? 'إلغاء التثبيت' : 'تثبيت الإعلان في المقدمة' %>">
+                          <span class="material-symbols-outlined text-base"><%= isPinned ? 'star' : 'star_outline' %></span>
+                        </button>
+                      <% } %>
+
+                      <% if (canManage) { %>
+                        <a href="/store/edit/<%= item._id %>" class="w-7 h-7 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-all cursor-pointer border border-blue-200 no-underline" title="تعديل المنتج">
+                          <span class="material-symbols-outlined text-xs">edit</span>
+                        </a>
+
+                        <button type="button" onclick="confirmDeleteItem('<%= item._id %>', '<%= item.title.replace(/'/g, "\\'") %>')" class="trash-btn-circle" title="حذف المنتج">
+                          <span class="material-symbols-outlined">delete</span>
+                        </button>
+                      <% } %>
+                    </div>
+                  </div>
+
+                  <div class="w-full" onclick="event.stopPropagation()">
+                    <% if (isOutOfStock) { %>
+                      <button type="button" disabled class="w-full py-2.5 px-4 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold shadow-none flex items-center justify-center gap-1 cursor-not-allowed border-none">
+                        <span class="material-symbols-outlined text-sm">block</span>
+                        <span>لايوجد كمية متوفرة</span>
+                      </button>
+                    <% } else if (item.type === 'multi') { %>
+                      <a href="/store/product/<%= item._id %>" class="w-full py-2.5 px-4 rounded-xl bg-[#0a122c] hover:bg-[#1e293b] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer no-underline">
+                        <span class="material-symbols-outlined text-base">visibility</span>
+                        <span>استعراض</span>
+                      </a>
+                    <% } else { %>
+                      <% 
+                        const defCurr = (item.singlePricing?.allowedCurrencies && item.singlePricing.allowedCurrencies.length > 0) ? item.singlePricing.allowedCurrencies[0] : { currency: 'SYP_CASH', price: 0 };
+                      %>
+                      <button type="button" onclick="addToCart('<%= item._id %>', null, '<%= item.title.replace(/'/g, "\\'") %>', '<%= defCurr.currency %>', <%= defCurr.price %>, '<%= item.seller.discordId %>', '<%= item.seller.username %>', '<%= item.seller.avatar %>', 1, <%= item.quantity !== undefined ? item.quantity : 1 %>, <%= Boolean(item.requireLogin) %>, <%= Boolean(item.requirePhoneNumber) %>)" class="w-full py-2.5 px-4 rounded-xl bg-[#0a122c] hover:bg-[#1e293b] text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer border-none">
+                        <span class="material-symbols-outlined text-base">add_shopping_cart</span>
+                        <span>إضافة إلى السلة</span>
+                      </button>
+                    <% } %>
+                  </div>
+                </div>
+
+              </div>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- مودال تفاصيل البيع الفردي السريع -->
+  <div id="itemModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 sm:p-6">
+    <div class="bg-white border border-slate-200 rounded-[2rem] max-w-2xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[92vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+        <div>
+          <h3 id="modalTitle" class="text-lg font-black text-slate-900 truncate"></h3>
+          <span id="modalStockStatus" class="text-[11px] font-bold block mt-0.5"></span>
+        </div>
+        <button type="button" onclick="closeItemModal()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto custom-modal-scroll flex-1 pr-1 space-y-4 pt-4">
+        <div class="w-full h-64 sm:h-72 rounded-2xl bg-slate-100 overflow-hidden border border-slate-200 shadow-inner">
+          <img id="modalImg" class="w-full h-full object-cover" onerror="this.src='/logo.png'">
+        </div>
+
+        <p id="modalDescription" class="text-xs sm:text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-200 whitespace-pre-wrap hidden"></p>
+
+        <div id="modalQtySection" class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-800 block">حدد الكمية المطلوبة:</span>
+            <span class="text-[10px] text-slate-400" id="maxQtyHint"></span>
+          </div>
+          <div class="flex items-center gap-3 bg-white p-1 rounded-xl border border-slate-200">
+            <button type="button" id="btnQtyMinus" onclick="changeQty(-1)" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center cursor-pointer border-none text-base">-</button>
+            <span id="selectedQtyDisplay" class="font-mono font-bold text-sm text-[#0a122c] w-6 text-center">1</span>
+            <button type="button" id="btnQtyPlus" onclick="changeQty(1)" class="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold flex items-center justify-center cursor-pointer border-none text-base">+</button>
+          </div>
+        </div>
+
+        <div id="modalPricingSection" class="space-y-2.5 pt-2 border-t border-slate-100"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال سلة المشتريات -->
+  <div id="cartModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 sm:p-6">
+    <div class="bg-white border border-slate-200 rounded-[2rem] max-w-xl w-full p-6 sm:p-8 shadow-2xl relative max-h-[92vh] flex flex-col">
+      <div class="flex items-center justify-between pb-4 border-b border-slate-100 shrink-0">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">shopping_cart</span>
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-slate-900">سلة المشتريات</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeCartModal()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-rose-700 flex items-center justify-center transition-colors">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <div class="overflow-y-auto custom-modal-scroll flex-1 pr-1 space-y-4 pt-4">
+        <div id="cartItemsList" class="space-y-2.5"></div>
+
+        <div id="cartActionSection" class="space-y-4 pt-2">
+          <% if (!user) { %>
+            <div id="guestContactSection" class="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-2">
+              <label for="guestContactInput" class="text-xs font-bold text-slate-800 block">وسيلة التواصل لإتمام الطلب (ديسكورد، تليجرام، أو واتساب) <span class="text-rose-500">*</span></label>
+              <input type="text" id="guestContactInput" placeholder="مثال: username#0000 أو @telegram أو 09xxxxxxxx" class="w-full px-3.5 py-2 rounded-xl bg-white border border-blue-200 text-xs font-bold outline-none focus:border-blue-500">
+            </div>
+          <% } %>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5">
+            <label class="text-xs font-bold text-slate-700 block">طريقة الشراء</label>
+            <div class="grid grid-cols-2 gap-2.5">
+              <button type="button" onclick="setMiddleman(false)" id="btnDirect" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-[#0a122c] bg-[#0a122c] text-white transition-all cursor-pointer">مباشر (بدون وسيط)</button>
+              <button type="button" onclick="setMiddleman(true)" id="btnMiddleman" class="py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-300 bg-white text-slate-700 transition-all cursor-pointer">مع وسيط (+5%)</button>
+            </div>
+          </div>
+
+          <div id="middlemanSection" class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 hidden">
+            <div class="flex items-center gap-1.5">
+              <label class="text-xs font-bold text-slate-800 block">اختر عملة تسديد عمولة الوسيط (5%):</label>
+              
+              <div class="relative flex items-center group cursor-pointer">
+                <span class="material-symbols-outlined text-slate-400 hover:text-slate-600 text-sm transition-colors">
+                  info
+                </span>
+                <div class="absolute bottom-full right-1/2 translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center w-52 p-2.5 bg-slate-900 text-white text-[11px] font-medium leading-relaxed rounded-xl shadow-xl z-50 pointer-events-none">
+                  <span>خدمة الوسيط تفيدك في تفادي النصب عليك من قبل البائع في حال كنت لاتثق به فالتكلفة بسيطة جداً، وهي فقط 5% لا أكثر</span>
+                  <div class="w-2 h-2 bg-slate-900 rotate-45 -mb-3.5 mt-1"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="custom-select-wrap" id="middlemanSelectWrap">
+              <input type="hidden" id="middlemanPaymentMethod" value="SYP_CASH">
+              <div class="custom-select-trigger" onclick="toggleCustomSelect(this)">
+                <div class="flex items-center gap-2">
+                  <div class="currency-badge-slot shrink-0">
+                    <span class="material-symbols-outlined w-5 h-5 rounded-full flex items-center justify-center text-[15px] text-emerald-500 bg-emerald-50 border border-emerald-200 font-bold">payments</span>
+                  </div>
+                  <span class="selected-text font-bold text-xs">ليرة سورية - نقداً</span>
+                </div>
+                <span class="material-symbols-outlined text-sm">expand_more</span>
+              </div>
+              <div class="custom-select-dropdown">
+                <div class="custom-select-search">
+                  <input type="text" placeholder="بحث عن العملة..." class="w-full px-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg outline-none" oninput="filterCustomSelectOptions(this)">
+                </div>
+                <div class="custom-select-options"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
+            <span class="text-xs font-bold text-slate-700 block">إجمالي المشتريات</span>
+            <div id="cartCurrencyTotals" class="space-y-1.5 font-mono text-xs"></div>
+            
+            <div id="cartMiddlemanFeeRow" class="pt-2 border-t border-slate-200/80 hidden flex items-center justify-between text-xs">
+              <div class="flex items-center gap-1.5">
+                <div id="middlemanFeeIconSlot"></div>
+                <span class="text-amber-800 font-bold">عمولة الوسيط المضافة (5%):</span>
+              </div>
+              <span id="middlemanFeeValue" class="font-mono font-black text-amber-800 text-sm"></span>
+            </div>
+          </div>
+
+          <button type="button" onclick="checkoutCart()" class="w-full py-3.5 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer border-none text-center">
+            إرسال الطلب
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إدخال رقم هاتف المستلم -->
+  <div id="phoneRequirementModal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4 sm:p-6">
+    <div class="bg-white border border-slate-200 rounded-[2rem] max-w-md w-full p-6 sm:p-7 shadow-2xl relative space-y-5">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-xl">contact_phone</span>
+          </div>
+          <div>
+            <h3 class="text-sm font-black text-slate-900">إدخال رقم المستلم</h3>
+            <p class="text-[11px] text-slate-400">مطلوب لتحويل الرصيد المطلوب في السلة</p>
+          </div>
+        </div>
+        <button type="button" onclick="closePhoneModal()" class="w-8 h-8 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-400 hover:text-slate-700 flex items-center justify-center">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <label class="text-xs font-bold text-slate-700 block">اختر الدولة واكتب الرقم المستهدف:</label>
+        
+        <div class="custom-select-wrap" id="countryCodeSelectWrap">
+          <input type="hidden" id="selectedCountryDial" value="+963">
+          <div class="custom-select-trigger" onclick="toggleCountrySelect(this)">
+            <div class="flex items-center gap-2">
+              <span class="fi fi-sy-rebel rounded-xs text-sm" id="selectedCountryFlag"></span>
+              <span class="selected-country-text font-bold text-xs" id="selectedCountryName">سوريا (+963)</span>
+            </div>
+            <span class="material-symbols-outlined text-sm">expand_more</span>
+          </div>
+          <div class="custom-select-dropdown" id="countrySelectDropdown">
+            <div class="custom-select-search">
+              <input type="text" placeholder="بحث عن الدولة..." class="w-full px-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg outline-none" oninput="filterCountryOptions(this)">
+            </div>
+            <div class="custom-select-options custom-modal-scroll" id="countryOptionsList"></div>
+          </div>
+        </div>
+
+        <input type="tel" id="buyerPhoneInput" placeholder="أدخل رقم الهاتف بدون النداء الدولي (مثال: 0912345678)" dir="ltr" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-mono font-bold outline-none focus:bg-white focus:border-blue-500">
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button type="button" onclick="confirmPhoneAndSubmit()" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer border-none flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-base">check</span>
+          <span>تأكيد ومتابعة الطلب</span>
+        </button>
+        <button type="button" onclick="closePhoneModal()" class="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200">
+          إلغاء
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال تأكيد الحذف -->
+  <div id="deleteModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/70 backdrop-blur-md p-4">
+    <div class="bg-white border border-slate-200 rounded-[2rem] max-w-sm w-full p-6 text-center shadow-2xl relative space-y-4">
+      <div class="w-14 h-14 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+        <span class="material-symbols-outlined text-3xl">delete_forever</span>
+      </div>
+      <div>
+        <h4 class="text-base font-black text-slate-900">تأكيد حذف المنتج</h4>
+        <p class="text-xs text-slate-500 mt-1" id="deleteItemPrompt">هل أنت متأكد من رغبتك بحذف هذا المنتج نهائياً من المتجر؟</p>
+      </div>
+      <div class="flex items-center gap-2.5 pt-2">
+        <button type="button" id="confirmDeleteBtn" onclick="executeDeleteItem()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs cursor-pointer border-none shadow-sm">تأكيد الحذف</button>
+        <button type="button" onclick="closeDeleteModal()" class="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs border border-slate-200 cursor-pointer">إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="w-full mt-auto">
+    <%- include('../partials/footer') %>
+  </div>
+
+<style>
+.fi-sy, .fi-sy-rebel {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 600'%3E%3Cpath fill='%23007a3d' d='M0 0h900v200H0z'/%3E%3Cpath fill='%23fff' d='M0 200h900v200H0z'/%3E%3Cpath fill='%23000' d='M0 400h900v200H0z'/%3E%3Cg fill='%23d01c1f' transform='translate(0 -5)'%3E%3Cpolygon points='225,250 237,285 274,285 244,307 256,342 225,320 194,342 206,307 176,285 213,285'/%3E%3Cpolygon points='450,250 462,285 499,285 469,307 481,342 450,320 419,342 431,307 401,285 438,285'/%3E%3Cpolygon points='675,250 687,285 724,285 694,307 706,342 675,320 644,342 656,307 626,285 663,285'/%3E%3C/g%3E%3C/svg%3E") !important;
+}
+</style>
+  
+<script src="/js/script.js"></script>
+<script>
+  const STORE_ITEMS = <%- JSON.stringify(items || []) %>;
+  const CURRENT_USER = <%- JSON.stringify(user || null) %>;
+
+  const ARAB_COUNTRIES = [
+    { name: 'سوريا', code: 'sy', dial: '+963' },
+    { name: 'العراق', code: 'iq', dial: '+964' },
+    { name: 'لبنان', code: 'lb', dial: '+961' },
+    { name: 'الأردن', code: 'jo', dial: '+962' },
+    { name: 'فلسطين', code: 'ps', dial: '+970' },
+    { name: 'مصر', code: 'eg', dial: '+20' },
+    { name: 'السعودية', code: 'sa', dial: '+966' },
+    { name: 'الإمارات', code: 'ae', dial: '+971' },
+    { name: 'الكويت', code: 'kw', dial: '+965' },
+    { name: 'قطر', code: 'qa', dial: '+974' },
+    { name: 'البحرين', code: 'bh', dial: '+973' },
+    { name: 'عمان', code: 'om', dial: '+968' },
+    { name: 'اليمن', code: 'ye', dial: '+967' },
+    { name: 'السودان', code: 'sd', dial: '+249' },
+    { name: 'ليبيا', code: 'ly', dial: '+218' },
+    { name: 'تونس', code: 'tn', dial: '+216' },
+    { name: 'الجزائر', code: 'dz', dial: '+213' },
+    { name: 'المغرب', code: 'ma', dial: '+212' },
+    { name: 'موريتانيا', code: 'mr', dial: '+222' },
+    { name: 'الصومال', code: 'so', dial: '+252' },
+    { name: 'جيبوتي', code: 'dj', dial: '+253' },
+    { name: 'جزر القمر', code: 'km', dial: '+269' }
+  ];
+
+  const ALL_CURRENCIES = [
+    { key: 'SYP_CASH', name: 'ليرة سورية (نقداً)', icon: 'payments', iconColor: 'text-emerald-500 bg-emerald-50' },
+    { key: 'IQD_CASH', name: 'دينار عراقي (نقداً)', icon: 'payments', iconColor: 'text-red-500 bg-emerald-50' },
+    { key: 'SYP_SHAM', name: 'ليرة سورية (شام كاش)', img: '/syp_sham.png' },
+    { key: 'SYP_PAYMERA', name: 'ليرة سورية (بايميرا)', img: '/syp_paymera.png' },
+    { key: 'SYP_MTN', name: 'ليرة سورية (ام تي ان كاش)', img: '/syp_mtn.png' },
+    { key: 'SYP_SYRIATEL', name: 'ليرة سورية (سيرياتيل كاش)', img: '/syp_syriatel.png' },
+    { key: 'IQD_ASIACELL', name: 'دينار عراقي (آسيا سيل)', img: '/iqd_asiacell.png' },
+    { key: 'IQD_QI', name: 'دينار عراقي (بنك الرافدين Qi)', img: '/iqd_qi.png' },
+    { key: 'USD_SHAM', name: 'دولار (شام كاش)', img: '/usd_sham.png' },
+    { key: 'VELO_COIN', name: 'فيلو كوين (Velo Coin)', img: '/velo_coin.png' },
+    { key: 'TRY_PAPARA', name: 'ليرة تركية (بابارا Papara)', img: '/try_papara.png' },
+    { key: 'TRY_CASH', name: 'ليرة تركية (حوالة بنكية / كاش)', img: '/try_cash.png' },
+    { key: 'LBP_WHISH', name: 'ليرة لبنانية / دولار (Whish Money)', img: '/lbp_whish.png' },
+    { key: 'JOD_CLIQ', name: 'دينار أردني (كليك CliQ)', img: '/jod_cliq.png' },
+    { key: 'JOD_ORANGE', name: 'دينار أردني (أورنج موني Orange)', img: '/jod_orange.png' },
+    { key: 'EGP_VODAFONE', name: 'جنيه مصري (فودافون كاش)', img: '/egp_vodafone.png' },
+    { key: 'EGP_INSTAPAY', name: 'جنيه مصري (إنستاباي InstaPay)', img: '/egp_instapay.png' },
+    { key: 'SAR_STCPAY', name: 'ريال سعودي (STC Pay)', img: '/sar_stcpay.png' },
+    { key: 'SAR_URPAY', name: 'ريال سعودي (Urpay)', img: '/sar_urpay.png' },
+    { key: 'USD_PAYPAL', name: 'دولار أمريكي (PayPal)', img: '/usd_paypal.png' },
+    { key: 'DZD_BARIDIMOB', name: 'دينار جزائري (بريدي موب BaridiMob)', img: '/dzd_baridimob.png' },
+    { key: 'DZD_CASH', name: 'دينار جزائري (CCP / نقداً)', img: '/dzd_cash.png' },
+    { key: 'MAD_CIH', name: 'درهم مغربي (CIH Bank)', img: '/mad_cih.png' },
+    { key: 'MAD_CASH', name: 'درهم مغربي (حوالة بنكية / نقداً)', img: '/mad_cash.png' },
+    { key: 'TND_D17', name: 'دينار تونسي (D17 البريد التونسي)', img: '/tnd_d17.png' },
+    { key: 'TND_FLOUCI', name: 'دينار تونسي (Flouci)', img: '/tnd_flouci.png' }
+  ];
+
+  const USD_RATES = {
+    'USD_SHAM': 1, 'USD_PAYPAL': 1, 'VELO_COIN': 100,
+    'SYP_CASH': 150, 'SYP_SHAM': 150, 'SYP_PAYMERA': 150, 'SYP_MTN': 150, 'SYP_SYRIATEL': 150,
+    'IQD_CASH': 1300, 'IQD_ASIACELL': 1300, 'IQD_QI': 1300,
+    'TRY_PAPARA': 35, 'TRY_CASH': 35, 'LBP_WHISH': 89500,
+    'JOD_CLIQ': 0.71, 'JOD_ORANGE': 0.71, 'EGP_VODAFONE': 49,
+    'EGP_INSTAPAY': 49, 'SAR_STCPAY': 3.75, 'SAR_URPAY': 3.75,
+    'DZD_BARIDIMOB': 135, 'DZD_CASH': 135,
+    'MAD_CIH': 10, 'MAD_CASH': 10,
+    'TND_D17': 3.1, 'TND_FLOUCI': 3.1
+  };
+
+  const currencyNames = Object.fromEntries(ALL_CURRENCIES.map(c => [c.key, c.name]));
+
+  function renderCurrencyBadge(currKey, sizeClass = "w-5 h-5") {
+    const c = ALL_CURRENCIES.find(item => item.key === currKey);
+    if (c && c.icon) {
+      return `<span class="material-symbols-outlined ${sizeClass} rounded-full flex items-center justify-center text-[15px] ${c.iconColor || 'text-emerald-500 bg-emerald-50'} border border-emerald-200 shrink-0 font-bold">${c.icon}</span>`;
+    }
+    const imgSrc = (c && c.img) ? c.img : `/${currKey.toLowerCase()}.png`;
+    return `<img src="${imgSrc}" onerror="this.src='/logo.png'" class="${sizeClass} object-contain rounded-full bg-slate-50 shrink-0">`;
+  }
+
+  function refreshCurrencyBadges() {
+    document.querySelectorAll('.curr-badge-slot').forEach(el => {
+      const key = el.getAttribute('data-curr');
+      if (key && !el.hasChildNodes()) {
+        el.innerHTML = renderCurrencyBadge(key, 'w-5 h-5');
+      }
+    });
+  }
+  refreshCurrencyBadges();
+
+  let cart = JSON.parse(localStorage.getItem('veloqra_cart') || '[]');
+  let useMiddleman = false;
+  let cardIndices = {};
+  let currentModalItem = null;
+  let selectedQuantity = 1;
+  let deletingItemId = null;
+  let calculatedMiddlemanFee = 0;
+
+  function showToast(msg, isSuccess = true) {
+    const toast = document.getElementById('appToast');
+    const toastMsg = document.getElementById('toastMsg');
+    const toastIcon = document.getElementById('toastIcon');
+
+    toastMsg.textContent = msg;
+    if (isSuccess) {
+      toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-[#0a122c] text-white border-slate-700 show';
+      toastIcon.textContent = 'check_circle';
+      toastIcon.className = 'material-symbols-outlined text-lg text-[#ffd000]';
+    } else {
+      toast.className = 'flex items-center gap-2.5 shadow-2xl border bg-rose-950 text-white border-rose-800 show';
+      toastIcon.textContent = 'error';
+      toastIcon.className = 'material-symbols-outlined text-lg text-rose-400';
+    }
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+    }, 3000);
+  }
+
+  function setScrollLock(locked) {
+    if (locked) {
+      document.body.classList.add('modal-lock');
+      document.documentElement.classList.add('modal-lock');
+    } else {
+      const anyOpen = Array.from(document.querySelectorAll('#itemModal, #cartModal, #deleteModal, #phoneRequirementModal'))
+        .some(m => !m.classList.contains('hidden'));
+      if (!anyOpen) {
+        document.body.classList.remove('modal-lock');
+        document.documentElement.classList.remove('modal-lock');
+      }
+    }
+  }
+
+  function updateCartUI() {
+    const badge = document.getElementById('cartCountBadge');
+    if (badge) {
+      const totalItemsCount = cart.reduce((acc, curr) => acc + (Number(curr.qty) || 1), 0);
+      badge.textContent = totalItemsCount;
+      badge.classList.toggle('hidden', totalItemsCount === 0);
+    }
+    localStorage.setItem('veloqra_cart', JSON.stringify(cart));
+  }
+  updateCartUI();
+
+  // ==================== وظائف التثبيت والحذف ==================== //
+
+  async function togglePinItem(itemId) {
+    try {
+      const res = await fetch(`/store/toggle-pin/${itemId}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message);
+        const card = document.getElementById(`store-item-card-${itemId}`);
+        const pinBtn = document.getElementById(`pin-btn-${itemId}`);
+        const pinBadge = document.getElementById(`pin-badge-${itemId}`);
+
+        if (card) {
+          card.classList.toggle('store-card-pinned', data.isPinned);
+        }
+        if (pinBtn) {
+          pinBtn.className = `pin-btn-circle ${data.isPinned ? 'pinned' : 'unpinned'}`;
+          pinBtn.title = data.isPinned ? 'إلغاء التثبيت' : 'تثبيت الإعلان في المقدمة';
+          pinBtn.innerHTML = `<span class="material-symbols-outlined text-base">${data.isPinned ? 'star' : 'star_outline'}</span>`;
+        }
+        if (pinBadge) {
+          pinBadge.classList.toggle('hidden', !data.isPinned);
+        }
+      } else {
+        showToast(data.message || 'حدث خطأ أثناء تعديل التثبيت', false);
+      }
+    } catch (err) {
+      showToast('تعذر الاتصال بالخادم', false);
+    }
+  }
+
+  function confirmDeleteItem(itemId, itemTitle) {
+    deletingItemId = itemId;
+    const promptEl = document.getElementById('deleteItemPrompt');
+    if (promptEl) {
+      promptEl.innerHTML = `هل أنت متأكد من رغبتك بحذف <strong>"${itemTitle}"</strong> نهائياً من المتجر؟`;
+    }
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setScrollLock(true);
+  }
+
+  function closeDeleteModal() {
+    deletingItemId = null;
+    const modal = document.getElementById('deleteModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    setScrollLock(false);
+  }
+
+  async function executeDeleteItem() {
+    if (!deletingItemId) return;
+    try {
+      const res = await fetch(`/store/delete/${deletingItemId}`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('تم حذف المنتج بنجاح');
+        const card = document.getElementById(`store-item-card-${deletingItemId}`);
+        if (card) {
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.9)';
+          setTimeout(() => card.remove(), 250);
+        }
+        closeDeleteModal();
+      } else {
+        showToast(data.message || 'فشل حذف المنتج', false);
+      }
+    } catch (err) {
+      showToast('تعذر حذف المنتج، يرجى المحاولة لاحقاً', false);
+    }
+  }
+
+  function addToCart(parentItemId, subItemId, title, currency, price, sellerDiscordId, sellerUsername, sellerAvatar, qty = 1, maxAvailable = 1, requireLogin = false, requirePhoneNumber = false) {
+    qty = Number(qty) || 1;
+    maxAvailable = Number(maxAvailable);
+
+    if (CURRENT_USER && String(CURRENT_USER.id) === String(sellerDiscordId)) {
+      return showToast('عذراً، لا يمكنك شراء منتجك الخاص أو إضافته للسلة!', false);
+    }
+
+    if (maxAvailable !== -1 && maxAvailable <= 0) {
+      return showToast('عذراً، هذا المنتج نفذت كميته تماماً!', false);
+    }
+
+    if (Boolean(requireLogin) && !CURRENT_USER) {
+      return showToast('هذا المنتج مخصص للمستخدمين المسجلين فقط، يرجى تسجيل الدخول أولاً!', false);
+    }
+
+    const existingIndex = cart.findIndex(i => String(i.parentItemId) === String(parentItemId) && String(i.subItemId || '') === String(subItemId || '') && i.currency === currency);
+    
+    if (existingIndex > -1) {
+      if (maxAvailable !== -1 && (cart[existingIndex].qty + qty) > maxAvailable) {
+        return showToast(`لديك هذا المنتج في السلة بالفعل بالحد الأقصى المتاح (${maxAvailable})`, false);
+      }
+      cart[existingIndex].qty += qty;
+    } else {
+      if (maxAvailable !== -1 && qty > maxAvailable) {
+        return showToast('الكمية المطلوبة تتجاوز المتوفر في المخزن!', false);
+      }
+      cart.push({
+        parentItemId: String(parentItemId),
+        subItemId: subItemId ? String(subItemId) : null,
+        title: String(title),
+        currency: String(currency),
+        price: Number(price) || 0,
+        sellerDiscordId: String(sellerDiscordId || ''),
+        sellerUsername: String(sellerUsername || 'Seller'),
+        sellerAvatar: String(sellerAvatar || '/logo.png'),
+        qty: qty,
+        maxAvailable: maxAvailable,
+        requireLogin: Boolean(requireLogin),
+        requirePhoneNumber: Boolean(requirePhoneNumber)
+      });
+    }
+
+    updateCartUI();
+    showToast('تمت إضافة المنتج إلى السلة بنجاح!');
+    closeItemModal();
+  }
+
+  function handleItemCardClick(type, id, itemObj) {
+    if (type === 'multi') {
+      window.location.href = `/store/product/${id}`;
+    } else {
+      openItemDetailsModal(itemObj);
+    }
+  }
+
+  function openCartModal() {
+    const container = document.getElementById('cartItemsList');
+    const actionSection = document.getElementById('cartActionSection');
+
+    if (!cart || cart.length === 0) {
+      container.innerHTML = `
+        <div class="py-12 px-4 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-white border border-slate-200 text-slate-400 flex items-center justify-center mx-auto mb-3 shadow-2xs">
+            <span class="material-symbols-outlined text-3xl">remove_shopping_cart</span>
+          </div>
+          <h4 class="text-sm font-extrabold text-slate-800">السلة فارغة حالياً</h4>
+          <p class="text-xs text-slate-400 mt-1">تصفح المتجر وأضف ما ترغب بشرائه للمتابعة</p>
+        </div>
+      `;
+      if (actionSection) actionSection.classList.add('hidden');
+    } else {
+      container.innerHTML = cart.map((item, idx) => `
+        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+          <div class="min-w-0 pr-1">
+            <div class="font-bold text-slate-900 truncate">${item.title}</div>
+            <div class="flex items-center gap-1.5 mt-0.5">
+              ${renderCurrencyBadge(item.currency, 'w-4 h-4')}
+              <span class="text-[10px] text-slate-400 font-mono">${currencyNames[item.currency] || item.currency} • الكمية: ${item.qty || 1}</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="font-mono font-extrabold text-[#0a122c] text-sm">${item.price * (item.qty || 1)}</span>
+            <button type="button" onclick="removeFromCart(${idx})" class="trash-btn-circle">
+              <span class="material-symbols-outlined">delete</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+      if (actionSection) actionSection.classList.remove('hidden');
+      recalculateCartTotals();
+    }
+
+    const modal = document.getElementById('cartModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setScrollLock(true);
+  }
+
+  function closeCartModal() {
+    const modal = document.getElementById('cartModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    setScrollLock(false);
+  }
+
+  function removeFromCart(idx) {
+    cart.splice(idx, 1);
+    updateCartUI();
+    openCartModal();
+    showToast('تم حذف العنصر من السلة');
+  }
+
+  function setMiddleman(enabled) {
+    useMiddleman = enabled;
+    const bM = document.getElementById('btnMiddleman');
+    const bD = document.getElementById('btnDirect');
+    const secM = document.getElementById('middlemanSection');
+    const feeRow = document.getElementById('cartMiddlemanFeeRow');
+
+    if (enabled) {
+      bM.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border border-[#0a122c] bg-[#0a122c] text-white transition-all cursor-pointer';
+      bD.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-300 bg-white text-slate-700 transition-all cursor-pointer';
+      secM.classList.remove('hidden');
+      if (feeRow) feeRow.classList.remove('hidden');
+    } else {
+      bD.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border border-[#0a122c] bg-[#0a122c] text-white transition-all cursor-pointer';
+      bM.className = 'py-2.5 px-3 rounded-xl text-xs font-bold border border-slate-300 bg-white text-slate-700 transition-all cursor-pointer';
+      secM.classList.add('hidden');
+      if (feeRow) feeRow.classList.add('hidden');
+    }
+    recalculateCartTotals();
+  }
+
+  function recalculateCartTotals() {
+    const totalsDiv = document.getElementById('cartCurrencyTotals');
+    const feeRow = document.getElementById('cartMiddlemanFeeRow');
+    const feeVal = document.getElementById('middlemanFeeValue');
+    const feeIconSlot = document.getElementById('middlemanFeeIconSlot');
+    if (!totalsDiv) return;
+
+    const totals = {};
+    let totalValueInUSD = 0;
+
+    cart.forEach(item => {
+      const itemTotal = Number(item.price) * (item.qty || 1);
+      totals[item.currency] = (totals[item.currency] || 0) + itemTotal;
+
+      const rateToUSD = USD_RATES[item.currency] || 1;
+      totalValueInUSD += (itemTotal / rateToUSD);
+    });
+
+    const keys = Object.keys(totals);
+    if (keys.length === 0) {
+      totalsDiv.innerHTML = '<span class="text-slate-400">لا توجد مبالغ مستحقة</span>';
+      if (feeRow) feeRow.classList.add('hidden');
+      return;
+    }
+
+    totalsDiv.innerHTML = keys.map(k => `
+      <div class="flex items-center justify-between py-1 border-b border-slate-200/60 last:border-none">
+        <div class="flex items-center gap-1.5">
+          ${renderCurrencyBadge(k, 'w-4 h-4')}
+          <span class="text-slate-600 font-bold">${currencyNames[k] || k}:</span>
+        </div>
+        <span class="font-black text-[#0a122c] text-sm">${totals[k]}</span>
+      </div>
+    `).join('');
+
+    if (useMiddleman && feeRow && feeVal) {
+      feeRow.classList.remove('hidden');
+      const feeInUSD = totalValueInUSD * 0.05;
+      const middlemanCurr = document.getElementById('middlemanPaymentMethod')?.value || 'SYP_CASH';
+      const targetRate = USD_RATES[middlemanCurr] || 1;
+
+      calculatedMiddlemanFee = Math.ceil(feeInUSD * targetRate);
+      feeVal.textContent = `+${calculatedMiddlemanFee} ${currencyNames[middlemanCurr] || middlemanCurr}`;
+      if (feeIconSlot) feeIconSlot.innerHTML = renderCurrencyBadge(middlemanCurr, 'w-4 h-4');
+    } else if (feeRow) {
+      feeRow.classList.add('hidden');
+      calculatedMiddlemanFee = 0;
+    }
+  }
+
+  function populateCountrySelectOptions() {
+    const container = document.getElementById('countryOptionsList');
+    if (!container) return;
+    container.innerHTML = ARAB_COUNTRIES.map(c => `
+      <div class="custom-select-option" data-code="${c.code}" data-dial="${c.dial}" data-name="${c.name}" onclick="selectCountryOption(this)">
+        <span class="fi fi-${c.code} rounded-xs text-sm"></span>
+        <span>${c.name} (${c.dial})</span>
+      </div>
+    `).join('');
+  }
+
+  function toggleCountrySelect(trigger) {
+    const dropdown = document.getElementById('countrySelectDropdown');
+    const isActive = dropdown.classList.contains('active');
+    document.querySelectorAll('.custom-select-dropdown').forEach(d => d.classList.remove('active'));
+    if (!isActive) {
+      dropdown.classList.add('active');
+      const list = document.getElementById('countryOptionsList');
+      if (!list.hasChildNodes()) populateCountrySelectOptions();
+    }
+  }
+
+  function filterCountryOptions(input) {
+    const q = input.value.toLowerCase().trim();
+    document.querySelectorAll('#countryOptionsList .custom-select-option').forEach(opt => {
+      const name = opt.getAttribute('data-name').toLowerCase();
+      const dial = opt.getAttribute('data-dial').toLowerCase();
+      opt.style.display = (name.includes(q) || dial.includes(q)) ? 'flex' : 'none';
+    });
+  }
+
+  function selectCountryOption(opt) {
+    const dial = opt.getAttribute('data-dial');
+    const code = opt.getAttribute('data-code');
+    const name = opt.getAttribute('data-name');
+
+    document.getElementById('selectedCountryDial').value = dial;
+    document.getElementById('selectedCountryFlag').className = `fi fi-${code} rounded-xs text-sm`;
+    document.getElementById('selectedCountryName').textContent = `${name} (${dial})`;
+    document.getElementById('countrySelectDropdown').classList.remove('active');
+  }
+
+  function openPhoneModal() {
+    const modal = document.getElementById('phoneRequirementModal');
+    populateCountrySelectOptions();
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setScrollLock(true);
+  }
+
+  function closePhoneModal() {
+    const modal = document.getElementById('phoneRequirementModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    setScrollLock(false);
+  }
+
+  function confirmPhoneAndSubmit() {
+    const dial = document.getElementById('selectedCountryDial').value.trim();
+    const phone = document.getElementById('buyerPhoneInput').value.trim();
+
+    if (!phone) {
+      return showToast('يرجى إدخال رقم الهاتف لإتمام طلب الرصيد!', false);
+    }
+
+    const formattedFullPhone = `${dial}-${phone}`;
+    closePhoneModal();
+    processFinalCheckout(formattedFullPhone);
+  }
+
+  function checkoutCart() {
+    if (cart.length === 0) return showToast('السلة فارغة!', false);
+
+    const hasRestricted = cart.some(i => i.requireLogin);
+    if (hasRestricted && !CURRENT_USER) {
+      return showToast('تحتوي سلتك على منتج يتطلب تسجيل الدخول لإتمام الطلب!', false);
+    }
+
+    if (!CURRENT_USER) {
+      const contactInput = document.getElementById('guestContactInput');
+      const guestContact = contactInput ? contactInput.value.trim() : '';
+      if (!guestContact) {
+        return showToast('يرجى كتابة وسيلة تواصل لتسليم الطلب!', false);
+      }
+    }
+
+    const needsPhone = cart.some(i => i.requirePhoneNumber === true || i.requirePhoneNumber === 'true');
+    
+    if (needsPhone) {
+      closeCartModal();
+      openPhoneModal();
+    } else {
+      processFinalCheckout(null);
+    }
+  }
+
+  async function processFinalCheckout(buyerPhoneNumber = null) {
+    let guestContact = null;
+    if (!CURRENT_USER) {
+      const contactInput = document.getElementById('guestContactInput');
+      guestContact = contactInput ? contactInput.value.trim() : '';
+    }
+
+    const middlemanMethod = useMiddleman ? document.getElementById('middlemanPaymentMethod').value : null;
+
+    try {
+      const res = await fetch('/store/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          items: cart, 
+          useMiddleman, 
+          middlemanPaymentMethod: middlemanMethod,
+          middlemanFee: calculatedMiddlemanFee,
+          guestContact,
+          buyerPhoneNumber
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('تم إرسال طلبك للتدقيق بنجاح!');
+        cart = [];
+        updateCartUI();
+        closeCartModal();
+        setTimeout(() => window.location.reload(), 1200);
+      } else {
+        showToast(data.message || 'حدث خطأ أثناء إتمام الطلب', false);
+      }
+    } catch (err) {
+      showToast('تعذر إتمام الطلب، تأكد من الاتصال بالإنترنت', false);
+    }
+  }
+
+  function toggleQuickPrices(id) {
+    const pop = document.getElementById(id);
+    const isVisible = pop.classList.contains('active');
+    document.querySelectorAll('.quick-prices-popover').forEach(p => p.classList.remove('active'));
+    if (!isVisible) {
+      pop.classList.add('active');
+      refreshCurrencyBadges();
+    }
+  }
+
+  function changeQty(diff) {
+    if (!currentModalItem) return;
+    const maxAvailable = currentModalItem.quantity;
+    if (maxAvailable !== -1 && maxAvailable <= 0) return;
+
+    const nextVal = selectedQuantity + diff;
+    if (nextVal >= 1 && (maxAvailable === -1 || nextVal <= maxAvailable)) {
+      selectedQuantity = nextVal;
+      document.getElementById('selectedQtyDisplay').textContent = selectedQuantity;
+    }
+  }
+
+  function openItemDetailsModal(item) {
+    currentModalItem = item;
+    selectedQuantity = 1;
+    document.getElementById('selectedQtyDisplay').textContent = '1';
+
+    const maxAvailable = item.quantity;
+    const isOutOfStock = (maxAvailable !== -1) && (maxAvailable <= 0);
+
+    const stockStatusEl = document.getElementById('modalStockStatus');
+    const qtySection = document.getElementById('modalQtySection');
+
+    if (isOutOfStock) {
+      stockStatusEl.textContent = 'المنتج غير متوفر حالياً (نفذ المخزون)';
+      stockStatusEl.className = 'text-[11px] font-bold text-rose-500 block mt-0.5';
+      qtySection.classList.add('opacity-50', 'pointer-events-none');
+    } else {
+      stockStatusEl.textContent = maxAvailable === -1 ? 'الكمية: غير محدودة' : `الكمية المتوفرة: ${maxAvailable}`;
+      stockStatusEl.className = 'text-[11px] font-bold text-emerald-600 block mt-0.5';
+      qtySection.classList.remove('opacity-50', 'pointer-events-none');
+    }
+
+    document.getElementById('maxQtyHint').textContent = isOutOfStock ? 'لا توجد كمية متاحة' : (maxAvailable === -1 ? 'شراء متاح بدون قيود' : `الحد الأقصى: ${maxAvailable}`);
+    document.getElementById('modalTitle').textContent = item.title;
+    
+    const descEl = document.getElementById('modalDescription');
+    if (item.description && item.description.trim()) {
+      descEl.textContent = item.description;
+      descEl.classList.remove('hidden');
+    } else {
+      descEl.classList.add('hidden');
+    }
+
+    document.getElementById('modalImg').src = (item.images && item.images.length > 0) ? item.images[0] : '/logo.png';
+
+    const pricingSec = document.getElementById('modalPricingSection');
+    pricingSec.innerHTML = '';
+
+    if (item.type === 'single') {
+      const allowed = item.singlePricing?.allowedCurrencies || [];
+      pricingSec.innerHTML = allowed.map(c => `
+        <div class="flex items-center justify-between p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+          <div class="flex items-center gap-2">
+            ${renderCurrencyBadge(c.currency, 'w-5 h-5')}
+            <span class="text-xs font-bold text-slate-800">${currencyNames[c.currency] || c.currency}</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-mono font-extrabold text-[#0a122c]">${c.price}</span>
+            ${isOutOfStock ? `
+              <button type="button" disabled class="px-4 py-2 rounded-xl bg-slate-200 text-slate-400 text-xs font-bold cursor-not-allowed border-none">
+                غير متوفر
+              </button>
+            ` : `
+              <button type="button" onclick="addToCart('${item._id}', null, '${item.title.replace(/'/g, "\\'")}', '${c.currency}', ${c.price}, '${item.seller.discordId}', '${item.seller.username}', '${item.seller.avatar}', selectedQuantity, ${item.quantity}, ${Boolean(item.requireLogin)}, ${Boolean(item.requirePhoneNumber)})" class="px-4 py-2 rounded-xl bg-[#0a122c] hover:bg-blue-600 text-white text-xs font-bold transition-all cursor-pointer border-none shadow-sm">
+                أضف للسلة
+              </button>
+            `}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    const modal = document.getElementById('itemModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    setScrollLock(true);
+  }
+
+  function closeItemModal() {
+    const modal = document.getElementById('itemModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    setScrollLock(false);
+  }
+
+  // البحث الفوري مع إعادة تفعيل شارات العملات
+  let searchTimeout = null;
+  function handleLiveSearch(query) {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/store?q=${encodeURIComponent(query.trim())}`);
+        const text = await res.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, 'text/html');
+        
+        const newResults = doc.getElementById('storeResultsArea');
+        const currentResults = document.getElementById('storeResultsArea');
+
+        if (newResults && currentResults) {
+          currentResults.innerHTML = newResults.innerHTML;
+          refreshCurrencyBadges();
+        }
+        
+        const newUrl = query.trim() ? `/store?q=${encodeURIComponent(query.trim())}` : '/store';
+        window.history.replaceState({}, '', newUrl);
+      } catch (err) {
+        console.error("Live search failed:", err);
+      }
+    }, 150);
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.quick-prices-popover') && !e.target.closest('button[onclick*="toggleQuickPrices"]')) {
+      document.querySelectorAll('.quick-prices-popover').forEach(p => p.classList.remove('active'));
+    }
+  });
+
+  ['itemModal', 'cartModal', 'deleteModal', 'phoneRequirementModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', (e) => {
+        if (e.target === el) {
+          el.classList.add('hidden');
+          el.classList.remove('flex');
+          setScrollLock(false);
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>

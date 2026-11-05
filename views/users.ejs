@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" class="scroll-smooth overflow-hidden">
+<html lang="ar" dir="rtl" class="scroll-smooth">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Veloqra - مجتمع المستخدمين</title>
+  <title>Veloqra - الاعضاء</title>
 
   <link rel="icon" type="image/png" href="/logo.png">
   <link rel="shortcut icon" type="image/png" href="/logo.png">
@@ -11,8 +11,8 @@
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Veloqra">
-  <meta property="og:title" content="Veloqra - أعضاء المجتمع">
-  <meta property="og:description" content="تعرف على مستخدمين منصة فيلوكرا المسجلين لدى المنصة">
+  <meta property="og:title" content="Veloqra - الاعضاء">
+  <meta property="og:description" content="تعرف على مستخدمين منصة فيلوكرا المسجلين في المنصة">
   <meta property="og:image" content="/logo.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,7 +34,7 @@
             brand: {
               blue: '#4287f5',
               navy: '#0a122c',
-              yellow: '#ffd000'
+              yellow: '#ffe27a'
             }
           }
         }
@@ -105,25 +105,22 @@
   </div>
 
   <header class="page-clean-header w-full relative z-30">
-    <%- include('../partials/dheader') %>
+    <%- include('partials/header') %>
   </header>
 
   <main class="w-full relative flex-1 py-10 md:py-16">
     <div class="max-w-6xl mx-auto px-4 sm:px-6">
 
-      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-300">
-        <div>
-          <span class="text-xs font-bold text-blue-700 uppercase tracking-widest bg-blue-50 border border-blue-100 px-3 py-1 rounded-full">
-            مجتمع فيلوكرا
-          </span>
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-3 tracking-tight">
-            أعضاء المنصة
-          </h1>
-          <p class="text-slate-500 text-xs sm:text-sm mt-1.5">
-            استكشف المستخدمين المسجلين لدى منصة فيلوكرا
-          </p>
-        </div>
+<div class="text-center max-w-4xl mx-auto mb-10 pb-6 border-b border-slate-300">
+  <h1 class="text-3xl sm:text-4xl font-extrabold text-[#070B1A] mt-3 tracking-tight">
+    أعضاء المنصة
+  </h1>
+  <p class="text-sm sm:text-base text-[#4B5575] mt-1.5">
+    استكشف المستخدمين المسجلين لدى منصة فيلوكرا
+  </p>
+</div>
 
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6">
         <div class="w-full md:w-72">
           <div class="relative">
             <span class="material-symbols-outlined absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg pointer-events-none">search</span>
@@ -132,7 +129,7 @@
               id="userSearchInput" 
               onkeyup="filterUsers()" 
               placeholder="ابحث بالاسم أو الأيدي..."
-              class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:border-[#0a122c] focus:bg-white transition-all shadow-sm"
+              class="w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#EEF1FB] border border-[#D5DBEE] text-xs sm:text-sm text-[#070B1A] focus:outline-none focus:border-[#0a122c] focus:bg-[#D5DBEE] transition-all shadow-sm"
             >
           </div>
         </div>
@@ -168,7 +165,7 @@
   </main>
 
   <div class="w-full mt-auto">
-    <%- include('../partials/footer') %>
+    <%- include('partials/footer') %>
   </div>
 
   <script src="/js/script.js"></script>

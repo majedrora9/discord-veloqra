@@ -1,29 +1,31 @@
 const mongoose = require('mongoose');
 
 const JobApplicationSchema = new mongoose.Schema({
-    userId: { type: String, required: true },       // Discord User ID
-    username: { type: String, required: true },     // Discord Username
-    globalName: { type: String, default: '' },      // Discord Global Display Name
-    avatar: { type: String, default: '/logo.png' }, // Avatar URL
-    applicantName: { type: String, required: true },// الاسم الحقيقي المدخل
-    applicantAge: { type: Number, required: true }, // العمر
-    experience: { type: String, required: true },   // شرح الخبرات الموسع
+    userId: { type: String, required: true },
+    username: { type: String, required: true },
+    avatar: { type: String, default: '/logo.png' },
+    fullName: { type: String },
+    applicantName: { type: String },
+    age: { type: Number, default: 18 },
+    applicantAge: { type: Number },
+    experience: { type: String, default: '' },
+    reason: { type: String, default: '' },
+    portfolio: { type: String, default: '' },
     status: { type: String, enum: ['pending', 'accepted', 'rejected'], default: 'pending' },
     appliedAt: { type: Date, default: Date.now }
 });
 
 const JobSchema = new mongoose.Schema({
-    jobKey: { type: String, required: true, unique: true }, // وسيط، دعم فني، إلخ
     title: { type: String, required: true },
     icon: { type: String, default: 'work' },
-    status: { type: String, enum: ['open', 'closed'], default: 'closed' },
-    desc: { type: String, required: true },
+    department: { type: String, default: 'عام' },
+    description: { type: String, default: '' },
+    desc: { type: String, default: '' },
     requirements: [{ type: String }],
-    tags: [{
-        icon: { type: String },
-        text: { type: String }
-    }],
-    applications: [JobApplicationSchema]
-}, { timestamps: true });
+    salary: { type: String, default: 'تحدد بعد المقابلة' },
+    status: { type: String, enum: ['open', 'closed'], default: 'open' },
+    applications: [JobApplicationSchema],
+    createdAt: { type: Date, default: Date.now }
+});
 
-module.exports = mongoose.model('Job', JobSchema);
+module.exports = mongoose.models.Job || mongoose.model('Job', JobSchema);
